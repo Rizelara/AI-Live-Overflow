@@ -309,16 +309,19 @@ class OverlayService : Service() {
         val steps = 20
         val stepDuration = 30L
         val runnable = object : Runnable {
-            var step = 0 override fun run() {
+            var step = 0
+            override fun run() {
                 step++
-                <= steps) {
-                    val progress = step.toFloat() / steps
+                if (step <= steps) {
+                    val progress = step.toFloat() / steps.toFloat()
                     params?.x = (startX + (PET_INIT_X - startX) * progress).toInt()
                     params?.y = (startY + (PET_INIT_Y - startY) * progress).toInt()
                     windowManager?.updateViewLayout(overlayView, params)
                     Handler(Looper.getMainLooper()).postDelayed(this, stepDuration)
                 } else {
-                    overlayView?.evaluateJavascript("window.petEngine && window.petEngine.setExpr('happy'); window.petEngine && window.petEngine.bubble('回来啦','love',2000)", null)
+                    overlayView?.evaluateJavascript(
+                        "window.petEngine && window.petEngine.setExpr('happy'); window.petEngine && window.petEngine.bubble('回来啦','love',2000)", null
+                    )
                 }
             }
         }
