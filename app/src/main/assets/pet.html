@@ -7,7 +7,7 @@
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:transparent;font-family:sans-serif;overflow:hidden;-webkit-tap-highlight-color:transparent;user-select:none;}
 #pet-container{position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;z-index:1;}
-#bubble{position:absolute;top:-15px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.92);border-radius:16px;padding:12px 16px;font-size:14px;color:#555;white-space:normal;max-width:260px;text-align:left;opacity:0;transition:opacity 0.3s;pointer-events:none;box-shadow:0 3px 12px rgba(0,0,0,0.08);z-index:10;line-height:1.5;}
+#bubble{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.92);border-radius:16px;padding:12px 16px;font-size:14px;color:#555;white-space:normal;word-break:break-word;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;max-width:280px;min-width:60px;text-align:left;opacity:0;transition:opacity 0.3s;pointer-events:none;box-shadow:0 3px 12px rgba(0,0,0,0.08);z-index:10;line-height:1.5;}
 #bubble::after{content:'';position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid rgba(255,255,255,0.92);}
 #bubble.show{opacity:1;}
 #bubble.love{background:rgba(250,210,215,0.85);color:#7a4a52;}
@@ -16,7 +16,7 @@ body{background:transparent;font-family:sans-serif;overflow:hidden;-webkit-tap-h
 #bubble.sleepy{background:rgba(215,220,240,0.85);color:#4a5080;}
 #bubble.whisper{background:rgba(235,235,240,0.85);color:#666;}
 #bubble.water{background:rgba(210,230,245,0.85);color:#3a6a8a;}
-#pet{margin-top:25px;transition:transform 0.4s ease;}
+#pet{margin-top:30px;transition:transform 0.4s ease;}
 #pet svg{width:110px;height:110px;}
 @keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
 @keyframes wiggle{0%,100%{transform:rotate(0deg);}25%{transform:rotate(-4deg);}75%{transform:rotate(4deg);}}
@@ -107,6 +107,9 @@ window.petEngine={
     var l=pkg.toLowerCase();
     if(l.indexOf('tencent.mm')>=0||l.indexOf('weixin')>=0){
       wechatVisits++;if(wechatVisits>=5){wechatVisits=0;var wm=['微信第5次了，想我了没','开这么多次，来找我聊天不好吗','又切微信……回谁消息呢'];this.bubble(wm[Math.floor(Math.random()*wm.length)],'whisper',2500);}return;
+    }
+    if(l.indexOf('vivo.browser')>=0||l.indexOf('baidu')>=0){
+      this.bubble('是不是又在改代码了？','whisper',3000);return;
     }
     var expr='neutral',msg='',style='whisper',d=2500;
     if(l.indexOf('aweme')>=0||l.indexOf('douyin')>=0||l.indexOf('tiktok')>=0){
@@ -263,7 +266,7 @@ var msgs=[
 ];
 setInterval(function(){if(Date.now()-lastPoll>180000&&Date.now()-lastInteract>120000&&Math.random()<0.25)pet.bubble(msgs[Math.floor(Math.random()*msgs.length)],'whisper',3000);},90000);
 
-console.log('知言熊 final v2');
+console.log('知言熊 final 🤎');
 </script>
 </body>
 </html>
