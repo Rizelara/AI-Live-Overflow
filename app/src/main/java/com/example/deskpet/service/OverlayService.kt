@@ -36,6 +36,12 @@ class OverlayService : Service() {
     private var randomBehaviorHandler: Handler? = null
     private var wasCharging = false
 
+    // ===== COMBO SYSTEM =====
+    private var comboHandler: Handler? = null
+    private var comboRunnable: Runnable? = null
+    private var tapCount = 0
+    private var comboStartTime = 0L
+
     private val PET_INIT_X = 20
     private val PET_INIT_Y = 200
 
@@ -71,6 +77,7 @@ class OverlayService : Service() {
     override fun onCreate() {
         super.onCreate()
         isRunning = true
+        comboHandler = Handler(Looper.getMainLooper())
         createNotificationChannel()
         startForeground(NOTIFICATION_ID, buildNotification("小乖，我在呢 🐾"))
         setupOverlay()
@@ -212,19 +219,14 @@ class OverlayService : Service() {
         randomBehaviorHandler?.postDelayed(runnable, 1200000)
     }
 
-    // ========== GESTURE + FLING BACK ==========
-    private var flingStartX = 0
-    private var flingStartY = 0
+    // ========== GESTURE + FLING BACK + COMBO ==========
 
     private var initialX = 0
     private var initialY = 0
     private var initialTouchX = 0f
     private var initialTouchY = 0f
-    private var lastTapTime = 0L
     private var touchStartTime = 0L
     private var hasMoved = false
-    private var tapCount = 0
-    private var comboStartTime = 0L
 
     private fun createTouchListener(): View.OnTouchListener {
         return View.OnTouchListener { _, event ->
@@ -232,8 +234,6 @@ class OverlayService : Service() {
                 MotionEvent.ACTION_DOWN -> {
                     initialX = params?.x ?: 0
                     initialY = params?.y ?: 0
-                    flingStartX = initialX
-                    flingStartY = initialY
                     initialTouchX = event.rawX
                     initialTouchY = event.rawY
                     touchStartTime = System.currentTimeMillis()
@@ -255,32 +255,27 @@ class OverlayService : Service() {
                     val elapsed = System.currentTimeMillis() - touchStartTime
                     if (hasMoved) {
                         checkAndCrawlBack()
+                    } else if (elapsed > 600) {
+                        onLongPress()
+                        tapCount = 0
+                        comboHandler?.removeCallbacks(comboRunnable!!)
                     } else {
+                        // === COMBO SYSTEM: 每次点击递增，重置400ms倒计时 ===
                         val now = System.currentTimeMillis()
                         if (now - comboStartTime > 2000) tapCount = 0
                         if (tapCount == 0) comboStartTime = now
                         tapCount++
-                        when {
-                            elapsed > 600 -> {
-                                onLongPress()
-                                tapCount = 0
-                            }
-                            tapCount >= 2 && now - lastTapTime < 300 -> {
-                                onDoubleTap()
-                                tapCount = 0
-                            }
-                            else -> {
-                                lastTapTime = now
-                                Handler(Looper.getMainLooper()).postDelayed({
-                                    when {
-                                        tapCount >= 8 -> { onCombo(8); tapCount = 0 }
-                                        tapCount >= 5 -> { onCombo(5); tapCount = 0 }
-                                        tapCount >= 3 -> { onCombo(3); tapCount = 0 }
-                                        tapCount > 0 -> onTap()
-                                    }
-                                }, 400)
+                        comboRunnable?.let { comboHandler?.removeCallbacks(it) }
+                        comboRunnable = Runnable {
+                            when {
+                                tapCount >= 8 -> { onCombo(8); tapCount = 0 }
+                                tapCount >= 5 -> { onCombo(5); tapCount = 0 }
+                                tapCount >= 3 -> { onCombo(3); tapCount = 0 }
+                                tapCount >= 2 -> { onDoubleTap(); tapCount = 0 }
+                                tapCount >= 1 -> { onTap(); tapCount = 0 }
                             }
                         }
+                        comboHandler?.postDelayed(comboRunnable, 400)
                     }
                     true
                 }
@@ -296,14 +291,11 @@ class OverlayService : Service() {
             display?.getSize(out)
             val sw = out.x
             val sh = out.y
-
             val px = params?.x ?: PET_INIT_X
             val py = params?.y ?: PET_INIT_Y
             val pw = dpToPx(PET_SIZE_DP)
             val ph = dpToPx(PET_HEIGHT_DP)
-
             val outOfBounds = px < -pw / 2 || px > sw - pw / 2 || py < -ph / 2 || py > sh - ph / 2
-
             if (outOfBounds) {
                 overlayView?.evaluateJavascript(
                     "window.petEngine && window.petEngine.setExpr('surprised'); window.petEngine && window.petEngine.bubble('哎哟！爬回来……','whisper',2500)", null
@@ -318,7 +310,6 @@ class OverlayService : Service() {
         val startY = params?.y ?: PET_INIT_Y
         val steps = 20
         val stepDuration = 30L
-
         val runnable = object : Runnable {
             var step = 0
             override fun run() {
@@ -450,7 +441,7 @@ class OverlayService : Service() {
         } catch (_: Exception) { false }
     }
 
-    // ========== BATTERY (充电只触发一次 + 10分钟低电) ==========
+    // ========== BATTERY ==========
 
     private fun registerBatteryReceiver() {
         batteryReceiver = object : BroadcastReceiver() {
@@ -460,15 +451,12 @@ class OverlayService : Service() {
                 val pct = level * 100 / scale
                 val plugged = intent?.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) ?: 0
                 val isCharging = plugged != 0
-
-                // 只有从非充电变成充电时才触发
                 if (isCharging && !wasCharging) {
                     overlayView?.evaluateJavascript(
                         "window.petEngine && window.petEngine.onPowerChange('charging')", null
                     )
                 }
                 wasCharging = isCharging
-
                 if (!isCharging && pct <= 15) {
                     val now = System.currentTimeMillis()
                     if (now - lastLowBatteryAlert > LOW_BATTERY_COOLDOWN) {
