@@ -108,6 +108,7 @@ class OverlayService : Service() {
                     initialTouchY = event.rawY
                     touchStartTime = System.currentTimeMillis()
                     hasMoved = false
+                    true
                 }
                 MotionEvent.ACTION_MOVE -> {
                     val dx = (event.rawX - initialTouchX).toInt()
@@ -128,20 +129,34 @@ class OverlayService : Service() {
                         if (tapCount == 0) comboStartTime = now
                         tapCount++
                         when {
-                            elapsed > 600 -> { onLongPress(); tapCount = 0 }
-                            now - lastTapTime < 300 -> { onDoubleTap(); tapCount = 0 }
+                            elapsed > 600 -> {
+                                onLongPress()
+                                tapCount = 0
+                            }
+                            now - lastTapTime < 300 -> {
+                                onDoubleTap()
+                                tapCount = 0
+                            }
                             else -> {
                                 lastTapTime = now
                                 Handler(Looper.getMainLooper()).postDelayed({
-                                    if (tapCount >= 8) { onCombo(8); tapCount = 0 }
-                                    else if (tapCount >= 5) { onCombo(5); tapCount = 0 }
-                                    else if (tapCount >= 3) { onCombo(3); tapCount = 0 }
-                                    else if (tapCount > 0) onTap()
+                                    if (tapCount >= 8) {
+                                        onCombo(8)
+                                        tapCount = 0
+                                    } else if (tapCount >= 5) {
+                                        onCombo(5)
+                                        tapCount = 0
+                                    } else if (tapCount >= 3) {
+                                        onCombo(3)
+                                        tapCount = 0
+                                    } else if (tapCount > 0) {
+                                        onTap()
+                                    }
                                 }, 350)
-                                true
                             }
                         }
-                    } else true
+                    }
+                    true
                 }
                 else -> false
             }
@@ -152,14 +167,17 @@ class OverlayService : Service() {
         overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onTap()", null)
         reportGesture("tap")
     }
+
     private fun onDoubleTap() {
         overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onDoubleTap()", null)
         reportGesture("double_tap")
     }
+
     private fun onLongPress() {
         overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onLongPress()", null)
         reportGesture("long_press")
     }
+
     private fun onCombo(count: Int) {
         overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onCombo($count)", null)
         reportGesture("combo_$count")
@@ -185,17 +203,19 @@ class OverlayService : Service() {
     }
 
     private fun postToSupabase(table: String, body: String) {
-        val url = URL("$SUPABASE_URL/rest/v1/$table")
-        val conn = url.openConnection() as HttpURLConnection
-        conn.requestMethod = "POST"
-        conn.setRequestProperty("Content-Type", "application/json")
-        conn.setRequestProperty("apikey", SUPABASE_ANON_KEY)
-        conn.setRequestProperty("Authorization", "Bearer $SUPABASE_ANON_KEY")
-        conn.setRequestProperty("Prefer", "return=minimal")
-        conn.doOutput = true
-        OutputStreamWriter(conn.outputStream).use { it.write(body) }
-        conn.responseCode
-        conn.disconnect()
+        try {
+            val url = URL("$SUPABASE_URL/rest/v1/$table")
+            val conn = url.openConnection() as HttpURLConnection
+            conn.requestMethod = "POST"
+            conn.setRequestProperty("Content-Type", "application/json")
+            conn.setRequestProperty("apikey", SUPABASE_ANON_KEY)
+            conn.setRequestProperty("Authorization", "Bearer $SUPABASE_ANON_KEY")
+            conn.setRequestProperty("Prefer", "return=minimal")
+            conn.doOutput = true
+            OutputStreamWriter(conn.outputStream).use { it.write(body) }
+            conn.responseCode
+            conn.disconnect()
+        } catch (_: Exception) {}
     }
 
     private fun getAppName(pkg: String): String {
@@ -203,7 +223,9 @@ class OverlayService : Service() {
             val pm = packageManager
             val info = pm.getApplicationInfo(pkg, 0)
             pm.getApplicationLabel(info).toString()
-        } catch (_: Exception) { pkg }
+        } catch (_: Exception) {
+            pkg
+        }
     }
 
     private fun startAppDetection() {
@@ -227,14 +249,16 @@ class OverlayService : Service() {
             val event = UsageEvents.Event()
             while (events.hasNextEvent()) {
                 events.getNextEvent(event)
-                if (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND)
+                if (event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND) {
                     currentPkg = event.packageName
+                }
             }
             if (currentPkg != lastPackage && currentPkg.isNotEmpty()) {
                 lastPackage = currentPkg
                 reportAppEvent(currentPkg)
                 overlayView?.evaluateJavascript(
-                    "window.petEngine && window.petEngine.onAppChange('$currentPkg')", null)
+                    "window.petEngine && window.petEngine.onAppChange('$currentPkg')", null
+                )
             }
         } catch (_: Exception) {}
     }
@@ -242,13 +266,24 @@ class OverlayService : Service() {
     private fun hasUsageStatsPermission(): Boolean {
         return try {
             val appOps = getSystemService(APP_OPS_SERVICE) as android.app.AppOpsManager
-            val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-                appOps.unsafeCheckOpNoThrow(android.app.AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), packageName)
-            else
+            val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                appOps.unsafeCheckOpNoThrow(
+                    android.app.AppOpsManager.OPSTR_GET_USAGE_STATS,
+                    android.os.Process.myUid(),
+                    packageName
+                )
+            } else {
                 @Suppress("DEPRECATION")
-                appOps.checkOpNoThrow(android.app.AppOpsManager.OPSTR_GET_USAGE_STATS, android.os.Process.myUid(), packageName)
+                appOps.checkOpNoThrow(
+                    android.app.AppOpsManager.OPSTR_GET_USAGE_STATS,
+                    android.os.Process.myUid(),
+                    packageName
+                )
+            }
             mode == android.app.AppOpsManager.MODE_ALLOWED
-        } catch (_: Exception) { false }
+        } catch (_: Exception) {
+            false
+        }
     }
 
     private fun registerBatteryReceiver() {
@@ -258,21 +293,34 @@ class OverlayService : Service() {
                 val scale = intent?.getIntExtra(BatteryManager.EXTRA_SCALE, 100) ?: 100
                 val pct = level * 100 / scale
                 val charging = intent?.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) ?: 0
-                if (charging != 0)
-                    overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onPowerChange('charging')", null)
-                else if (pct <= 15)
-                    overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onPowerChange('low_battery')", null)
+                if (charging != 0) {
+                    overlayView?.evaluateJavascript(
+                        "window.petEngine && window.petEngine.onPowerChange('charging')", null
+                    )
+                } else if (pct <= 15) {
+                    overlayView?.evaluateJavascript(
+                        "window.petEngine && window.petEngine.onPowerChange('low_battery')", null
+                    )
+                }
             }
         }
         registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
     }
 
     private fun buildNotification(text: String): Notification {
-        val pi = PendingIntent.getActivity(this, 0, Intent(this, com.example.deskpet.MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+        val pi = PendingIntent.getActivity(
+            this, 0,
+            Intent(this, com.example.deskpet.MainActivity::class.java),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("🐾 知言").setContentText(text)
+            .setContentTitle("🐾 知言")
+            .setContentText(text)
             .setSmallIcon(android.R.drawable.ic_menu_compass)
-            .setOngoing(true).setSilent(true).setContentIntent(pi).build()
+            .setOngoing(true)
+            .setSilent(true)
+            .setContentIntent(pi)
+            .build()
     }
 
     fun updateNotification(text: String) {
@@ -290,11 +338,15 @@ class OverlayService : Service() {
 
     inner class PetBridge {
         @JavascriptInterface
-        fun updateNotification(text: String) { this@OverlayService.updateNotification(text) }
+        fun updateNotification(text: String) {
+            this@OverlayService.updateNotification(text)
+        }
+
         @JavascriptInterface
         fun getCurrentTime(): String {
             val cal = java.util.Calendar.getInstance()
-            return "${cal.get(java.util.Calendar.HOUR_OF_DAY)}:${String.format("%02d", cal.get(java.util.Calendar.MINUTE))}"
+            return "${cal.get(java.util.Calendar.HOUR_OF_DAY)}:" +
+                    String.format("%02d", cal.get(java.util.Calendar.MINUTE))
         }
     }
 
