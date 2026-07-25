@@ -35,10 +35,7 @@ class OverlayService : Service() {
     private var lastLowBatteryAlert = 0L
     private var randomBehaviorHandler: Handler? = null
     private var wasCharging = false
-
-    // ===== COMBO SYSTEM =====
     private var comboHandler: Handler? = null
-    private var comboRunnable: Runnable? = null
     private var tapCount = 0
     private var comboStartTime = 0L
 
@@ -89,8 +86,6 @@ class OverlayService : Service() {
         startRandomBehavior()
     }
 
-    // ========== OVERLAY ==========
-
     private fun setupOverlay() {
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         params = WindowManager.LayoutParams(
@@ -124,8 +119,6 @@ class OverlayService : Service() {
         windowManager?.addView(overlayView, params)
     }
 
-    // ========== SUPABASE POLLING ==========
-
     private fun startPollingSupabase() {
         thread {
             var lastId = 0L
@@ -155,8 +148,6 @@ class OverlayService : Service() {
         }
     }
 
-    // ========== SCREENSHOT ==========
-
     private fun startScreenshotObserver() {
         try {
             val path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).absolutePath + "/Screenshots"
@@ -177,8 +168,6 @@ class OverlayService : Service() {
         } catch (_: Exception) {}
     }
 
-    // ========== NOTIFICATION WHISPER ==========
-
     private fun startWhisperRotation() {
         whisperHandler = Handler(Looper.getMainLooper())
         val runnable = object : Runnable {
@@ -188,19 +177,11 @@ class OverlayService : Service() {
                 whisperHandler?.postDelayed(this, 3600000)
             }
         }
-        whisperHandler?.postDelayed(runnable, 3600000)
-    }
+        whisperHandlerpost }
 
-    fun updateNotification(text: String) {
-        val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        nm.notify(NOTIFICATION_ID, buildNotification(text))
-    }
+ val nm = getSystemService(NOTIFICATION_SERVICE) as Notificationify build }
 
-    // ========== 20 MIN RANDOM BEHAVIOR ==========
-
-    private fun startRandomBehavior() {
-        randomBehaviorHandler = Handler(Looper.getMainLooper())
-        val runnable = object : Runnable {
+   .get val runnable = object : Runnable {
             override fun run() {
                 if (Math.random() < 0.3) {
                     val behaviors = arrayOf(
@@ -218,8 +199,6 @@ class OverlayService : Service() {
         }
         randomBehaviorHandler?.postDelayed(runnable, 1200000)
     }
-
-    // ========== GESTURE + FLING BACK + COMBO ==========
 
     private var initialX = 0
     private var initialY = 0
@@ -258,15 +237,14 @@ class OverlayService : Service() {
                     } else if (elapsed > 600) {
                         onLongPress()
                         tapCount = 0
-                        comboHandler?.removeCallbacks(comboRunnable!!)
+                        comboHandler?.removeCallbacksAndMessages(null)
                     } else {
-                        // === COMBO SYSTEM: 每次点击递增，重置400ms倒计时 ===
                         val now = System.currentTimeMillis()
                         if (now - comboStartTime > 2000) tapCount = 0
                         if (tapCount == 0) comboStartTime = now
                         tapCount++
-                        comboRunnable?.let { comboHandler?.removeCallbacks(it) }
-                        comboRunnable = Runnable {
+                        comboHandler?.removeCallbacksAndMessages(null)
+                        val r = Runnable {
                             when {
                                 tapCount >= 8 -> { onCombo(8); tapCount = 0 }
                                 tapCount >= 5 -> { onCombo(5); tapCount = 0 }
@@ -275,7 +253,7 @@ class OverlayService : Service() {
                                 tapCount >= 1 -> { onTap(); tapCount = 0 }
                             }
                         }
-                        comboHandler?.postDelayed(comboRunnable, 400)
+                        comboHandler?.postDelayed(r, 400)
                     }
                     true
                 }
@@ -347,8 +325,6 @@ class OverlayService : Service() {
         reportGesture("combo_$count")
     }
 
-    // ========== REPORTING ==========
-
     private fun reportGesture(type: String) {
         thread {
             try {
@@ -391,8 +367,6 @@ class OverlayService : Service() {
             pm.getApplicationLabel(info).toString()
         } catch (_: Exception) { pkg }
     }
-
-    // ========== APP DETECTION ==========
 
     private fun startAppDetection() {
         if (!hasUsageStatsPermission()) return
@@ -441,8 +415,6 @@ class OverlayService : Service() {
         } catch (_: Exception) { false }
     }
 
-    // ========== BATTERY ==========
-
     private fun registerBatteryReceiver() {
         batteryReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
@@ -470,8 +442,6 @@ class OverlayService : Service() {
         }
         registerReceiver(batteryReceiver, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
     }
-
-    // ========== NOTIFICATION ==========
 
     private fun buildNotification(text: String): Notification {
         val pi = PendingIntent.getActivity(this, 0,
