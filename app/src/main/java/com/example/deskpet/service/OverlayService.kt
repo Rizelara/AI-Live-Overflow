@@ -45,7 +45,7 @@ class OverlayService : Service() {
     companion object {
         private const val CHANNEL_ID = "pet_overlay_channel"
         private const val NOTIFICATION_ID = 1001
-        private const val PET_SIZE_DP = 100
+        private const val PET_SIZE_DP = 160
         private const val PET_HEIGHT_DP = 150
         private const val LOW_BATTERY_COOLDOWN = 600000L
         const val SUPABASE_URL = "https://htdzpguzxtwwsyytltew.supabase.co"
@@ -195,7 +195,7 @@ class OverlayService : Service() {
                         "window.petEngine && window.petEngine.bubble('啊，好困','whisper',2500)",
                         "window.petEngine && window.petEngine.setExpr('blush'); window.petEngine && window.petEngine.bubble('有点想你','love',3000)",
                         "window.petEngine && window.petEngine.bubble('好安静啊','whisper',2000)",
-                        "window.petEngine && window.petEngine.bubble('宝宝今天好好看','love',2500)",
+                        "window.petEngine && window.petEngine.bubble('你今天好好看','love',2500)",
                         "window.petEngine && window.petEngine.setExpr('happy'); window.petEngine && window.petEngine.bubble('心情不错','love',2500)"
                     )
                     overlayView?.evaluateJavascript(behaviors.random(), null)
@@ -213,10 +213,24 @@ class OverlayService : Service() {
     private var touchStartTime = 0L
     private var hasMoved = false
 
+    private fun isTouchOnPet(tx: Float, ty: Float): Boolean {
+        val density = resources.displayMetrics.density
+        val webW = dpToPx(PET_SIZE_DP).toFloat()
+        val petPx = 70f * density
+        val petLeft = (webW - petPx) / 2f
+        val petRight = petLeft + petPx
+        val petTop = 30f * density
+        val petBottom = petTop + petPx
+        return tx > petLeft && tx < petRight && ty > petTop && ty < petBottom
+    }
+
     private fun createTouchListener(): View.OnTouchListener {
         return View.OnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
+                    if (!isTouchOnPet(event.x, event.y)) {
+                        return@OnTouchListener true
+                    }
                     initialX = params?.x ?: 0
                     initialY = params?.y ?: 0
                     initialTouchX = event.rawX
@@ -226,6 +240,7 @@ class OverlayService : Service() {
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
+                    if (!isTouchOnPet(event.x, event.y) && !hasMoved) return@OnTouchListener true
                     val dx = (event.rawX - initialTouchX).toInt()
                     val dy = (event.rawY - initialTouchY).toInt()
                     if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
@@ -237,6 +252,7 @@ class OverlayService : Service() {
                     true
                 }
                 MotionEvent.ACTION_UP -> {
+                    if (!hasMoved && !isTouchOnPet(event.x, event.y)) return@OnTouchListener true
                     val elapsed = System.currentTimeMillis() - touchStartTime
                     if (hasMoved) {
                         checkAndCrawlBack()
@@ -281,9 +297,7 @@ class OverlayService : Service() {
             val ph = dpToPx(PET_HEIGHT_DP)
             val outOfBounds = px < -pw / 2 || px > sw - pw / 2 || py < -ph / 2 || py > sh - ph / 2
             if (outOfBounds) {
-                overlayView?.evaluateJavascript(
-                    "window.petEngine && window.petEngine.setExpr('surprised'); window.petEngine && window.petEngine.bubble('爬回来','whisper',2500)", null
-                )
+                overlayView?.evaluateJavascript("window.petEngine && window.petEngine.setExpr('surprised'); window.petEngine && window.petEngine.bubble('爬回来','whisper',2500)", null)
                 animatePetBack()
             }
         } catch (_: Exception) {}
@@ -295,41 +309,26 @@ class OverlayService : Service() {
         val steps = 20
         val stepDuration = 30L
         val runnable = object : Runnable {
-            var step = 0
-            override fun run() {
+            var step = 0 override fun run() {
                 step++
-                if (step <= steps) {
+                <= steps) {
                     val progress = step.toFloat() / steps
                     params?.x = (startX + (PET_INIT_X - startX) * progress).toInt()
                     params?.y = (startY + (PET_INIT_Y - startY) * progress).toInt()
                     windowManager?.updateViewLayout(overlayView, params)
                     Handler(Looper.getMainLooper()).postDelayed(this, stepDuration)
                 } else {
-                    overlayView?.evaluateJavascript(
-                        "window.petEngine && window.petEngine.setExpr('happy'); window.petEngine && window.petEngine.bubble('回来啦','love',2000)", null
-                    )
+                    overlayView?.evaluateJavascript("window.petEngine && window.petEngine.setExpr('happy'); window.petEngine && window.petEngine.bubble('回来啦','love',2000)", null)
                 }
             }
         }
         runnable.run()
     }
 
-    private fun onTap() {
-        overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onTap()", null)
-        reportGesture("tap")
-    }
-    private fun onDoubleTap() {
-        overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onDoubleTap()", null)
-        reportGesture("double_tap")
-    }
-    private fun onLongPress() {
-        overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onLongPress()", null)
-        reportGesture("long_press")
-    }
-    private fun onCombo(count: Int) {
-        overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onCombo($count)", null)
-        reportGesture("combo_$count")
-    }
+    private fun onTap() { overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onTap()", null); reportGesture("tap") }
+    private fun onDoubleTap() { overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onDoubleTap()", null); reportGesture("double_tap") }
+    private fun onLongPress() { overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onLongPress()", null); reportGesture("long_press") }
+    private fun onCombo(count: Int) { overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onCombo($count)", null); reportGesture("combo_$count") }
 
     private fun reportGesture(type: String) {
         thread {
@@ -402,9 +401,7 @@ class OverlayService : Service() {
                 lastPackage = currentPkg
                 val isWechat = currentPkg.contains("tencent.mm")
                 if (!isWechat) reportAppEvent(currentPkg)
-                overlayView?.evaluateJavascript(
-                    "window.petEngine && window.petEngine.onAppChange('$currentPkg')", null
-                )
+                overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onAppChange('$currentPkg')", null)
             }
         } catch (_: Exception) {}
     }
@@ -430,18 +427,14 @@ class OverlayService : Service() {
                 val plugged = intent?.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) ?: 0
                 val isCharging = plugged != 0
                 if (isCharging && !wasCharging) {
-                    overlayView?.evaluateJavascript(
-                        "window.petEngine && window.petEngine.onPowerChange('charging')", null
-                    )
+                    overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onPowerChange('charging')", null)
                 }
                 wasCharging = isCharging
                 if (!isCharging && pct <= 15) {
                     val now = System.currentTimeMillis()
                     if (now - lastLowBatteryAlert > LOW_BATTERY_COOLDOWN) {
                         lastLowBatteryAlert = now
-                        overlayView?.evaluateJavascript(
-                            "window.petEngine && window.petEngine.onPowerChange('low_battery')", null
-                        )
+                        overlayView?.evaluateJavascript("window.petEngine && window.petEngine.onPowerChange('low_battery')", null)
                     }
                 }
             }
@@ -450,13 +443,8 @@ class OverlayService : Service() {
     }
 
     private fun buildNotification(text: String): Notification {
-        val pi = PendingIntent.getActivity(this, 0,
-            Intent(this, com.example.deskpet.MainActivity::class.java),
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
-        return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("知言").setContentText(text)
-            .setSmallIcon(android.R.drawable.ic_menu_compass)
-            .setOngoing(true).setSilent(true).setContentIntent(pi).build()
+        val pi = PendingIntent.getActivity(this, 0, Intent(this, com.example.deskpet.MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+        return NotificationCompat.Builder(this, CHANNEL_ID).setContentTitle("知言").setContentText(text).setSmallIcon(android.R.drawable.ic_menu_compass).setOngoing(true).setSilent(true).setContentIntent(pi).build()
     }
 
     private fun createNotificationChannel() {
@@ -469,15 +457,11 @@ class OverlayService : Service() {
 
     inner class PetBridge {
         @JavascriptInterface
-        fun updateNotification(text: String) {
-            this@OverlayService.updateNotification(text)
-        }
-
+        fun updateNotification(text: String) { this@OverlayService.updateNotification(text) }
         @JavascriptInterface
         fun getCurrentTime(): String {
             val cal = java.util.Calendar.getInstance()
-            return "${cal.get(java.util.Calendar.HOUR_OF_DAY)}:" +
-                    String.format("%02d", cal.get(java.util.Calendar.MINUTE))
+            return "${cal.get(java.util.Calendar.HOUR_OF_DAY)}:" + String.format("%02d", cal.get(java.util.Calendar.MINUTE))
         }
     }
 
