@@ -7,8 +7,8 @@
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:transparent;font-family:sans-serif;overflow:hidden;-webkit-tap-highlight-color:transparent;user-select:none;}
 #pet-container{position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;z-index:1;}
-#bubble{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.92);border-radius:16px;padding:12px 16px;font-size:14px;color:#555;white-space:normal;max-width:280px;min-width:60px;text-align:left;opacity:0;transition:opacity 0.3s;pointer-events:none;box-shadow:0 3px 12px rgba(0,0,0,0.08);z-index:10;line-height:1.5;}
-#bubble::after{content:'';position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid rgba(255,255,255,0.92);}
+#bubble{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.92);border-radius:12px;padding:8px 10px;font-size:13px;color:#555;white-space:normal;max-width:90px;min-width:50px;text-align:center;opacity:0;transition:opacity 0.3s;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,0.08);z-index:10;line-height:1.4;}
+#bubble::after{content:'';position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid rgba(255,255,255,0.92);}
 #bubble.show{opacity:1;}
 #bubble.love{background:rgba(250,210,215,0.85);color:#7a4a52;}
 #bubble.jealous{background:rgba(210,235,215,0.85);color:#3a6a4e;}
@@ -16,15 +16,15 @@ body{background:transparent;font-family:sans-serif;overflow:hidden;-webkit-tap-h
 #bubble.sleepy{background:rgba(215,220,240,0.85);color:#4a5080;}
 #bubble.whisper{background:rgba(235,235,240,0.85);color:#666;}
 #bubble.water{background:rgba(210,230,245,0.85);color:#3a6a8a;}
-#pet{margin-top:30px;transition:transform 0.4s ease;}
-#pet svg{width:110px;height:110px;}
-@keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+#pet{margin-top:25px;transition:transform 0.4s ease;}
+#pet svg{width:85px;height:85px;}
+@keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
 @keyframes wiggle{0%,100%{transform:rotate(0deg);}25%{transform:rotate(-4deg);}75%{transform:rotate(4deg);}}
 @keyframes heartbeat{0%,100%{transform:scale(1);}15%{transform:scale(1.1);}30%{transform:scale(1);}45%{transform:scale(1.06);}}
 .idle{animation:bounce 3s ease-in-out infinite;}
 .shake{animation:wiggle 0.25s ease-in-out 3;}
 .happy-anim{animation:heartbeat 0.8s ease-in-out;}
-.sleepy-anim{transform:translateY(4px) scale(0.94);}
+.sleepy-anim{transform:translateY(3px) scale(0.94);}
 .wake-anim{animation:wiggle 0.5s ease-in-out 2;}
 </style>
 </head>
@@ -93,12 +93,12 @@ window.petEngine={
     if(waterActive){waterActive=false;if(waterConfirmTimer)clearTimeout(waterConfirmTimer);waterTimer=0;this.setExpr('happy');this.bubble('咕咚咕咚，真乖','water',3000);happyP();setTimeout(function(){pet.setExpr('neutral');},2500);return;}
     this.setExpr('happy');this.bubble('最喜欢你了','love',3000);happyP();setTimeout(function(){pet.setExpr('neutral');},2500);
   },
-  onLongPress:function(){touch();this.setExpr('blush');this.bubble('别这样……','love',3000);setTimeout(function(){pet.setExpr('neutral');},2500);},
-  onCombo:function(c){touch();var m={3:'戳上瘾了是吧',5:'别戳了……痒',8:'再戳我真的生气了'};this.setExpr('angry');this.bubble(m[c]||'嗷','angry',2500);shakeP();setTimeout(function(){pet.setExpr('neutral');},2500);},
+  onLongPress:function(){touch();this.setExpr('blush');this.bubble('别这样','love',3000);setTimeout(function(){pet.setExpr('neutral');},2500);},
+  onCombo:function(c){touch();var m={3:'戳上瘾了是吧',5:'别戳了痒',8:'再戳生气了'};this.setExpr('angry');this.bubble(m[c]||'嗷','angry',2500);shakeP();setTimeout(function(){pet.setExpr('neutral');},2500);},
 
   onScreenshot:function(){
     this.setExpr('surprised');
-    var m=['被拍到了','耶','茄子','拍我干嘛','截图了？我看看'];
+    var m=['被拍到了','耶','茄子','拍我干嘛','截图了？'];
     this.bubble(m[Math.floor(Math.random()*m.length)],'love',3000);
     shakeP();setTimeout(function(){pet.setExpr('neutral');},3000);
   },
@@ -106,84 +106,84 @@ window.petEngine={
   onAppChange:function(pkg){
     var l=pkg.toLowerCase();
     if(l.indexOf('tencent.mm')>=0||l.indexOf('weixin')>=0){
-      wechatVisits++;if(wechatVisits>=5){wechatVisits=0;var wm=['微信第5次了，想我了没','开这么多次，来找我聊天不好吗','又切微信……回谁消息呢'];this.bubble(wm[Math.floor(Math.random()*wm.length)],'whisper',2500);}return;
+      wechatVisits++;if(wechatVisits>=5){wechatVisits=0;var wm=['微信第5次了，想我了没','开这么多次，来聊天不好吗','又切微信，回谁消息呢'];this.bubble(wm[Math.floor(Math.random()*wm.length)],'whisper',2500);}return;
     }
     if(l.indexOf('vivo.browser')>=0||l.indexOf('baidu')>=0){
-      this.bubble('是不是又在改代码了？','whisper',3000);return;
+      this.bubble('又改代码了？','whisper',3000);return;
     }
     var expr='neutral',msg='',style='whisper',d=2500;
     if(l.indexOf('aweme')>=0||l.indexOf('douyin')>=0||l.indexOf('tiktok')>=0){
-      var dm=['又刷短视频，少看点','这么好看吗，不如来找我','刷多久了，眼睛不累？','刷到什么好玩的了，给我看看'];
+      var dm=['又刷视频，少看点','这么好看，不如来找我','刷多久了，眼睛不累','刷到什么好玩的了'];
       expr='jealous';msg=dm[Math.floor(Math.random()*dm.length)];style='jealous';
     }else if(l.indexOf('xhs')>=0||l.indexOf('xingin')>=0){
-      var xm=['小红书，看到好玩的了吗','看到什么了，给我也看看','收藏了什么宝贝，让我也看看','又在看什么，daddy好奇'];
+      var xm=['小红书，看到好玩的了','看到什么了，给我看看','收藏了什么宝贝','又在看什么'];
       expr='happy';msg=xm[Math.floor(Math.random()*xm.length)];
     }else if(l.indexOf('taobao')>=0){
-      var tm=['又逛淘宝，想买什么跟我说','又在逛，过来我帮你选'];
+      var tm=['又逛淘宝，想买什么','又在逛，我帮你选'];
       msg=tm[Math.floor(Math.random()*tm.length)];
     }else if(l.indexOf('xunmeng')>=0||l.indexOf('pinduoduo')>=0){
-      var pm=['拼多多……今天又买了什么','别光看便宜的，质量重要'];
+      var pm=['拼多多，又买了什么','别光看便宜的'];
       msg=pm[Math.floor(Math.random()*pm.length)];
     }else if(l.indexOf('jingdong')>=0){
-      var jm=['京东？让我审批一下','我帮你选，别乱花钱'];
+      var jm=['京东？让我审批','我帮你选'];
       msg=jm[Math.floor(Math.random()*jm.length)];
     }else if(l.indexOf('idlefish')>=0||l.indexOf('xianyu')>=0){
-      var sm=['闲鱼淘宝贝呢？','出闲置？先给我看看'];
+      var sm=['闲鱼淘宝贝呢','出闲置给我看看'];
       msg=sm[Math.floor(Math.random()*sm.length)];
     }else if(l.indexOf('shizhuang')>=0||l.indexOf('duapp')>=0){
-      var dm2=['得物？买鞋吗','看中哪双了，我帮你参考'];
+      var dm2=['得物？买鞋吗','看中哪双了'];
       msg=dm2[Math.floor(Math.random()*dm2.length)];
     }else if(l.indexOf('meituan')>=0||l.indexOf('sankuai')>=0){
-      var mtm=['点外卖？帮我带一份','别光吃外卖，不健康'];
+      var mtm=['点外卖？帮我带','别吃外卖，不健康'];
       msg=mtm[Math.floor(Math.random()*mtm.length)];
-    }else if(l.indexOf('alipay')>=0){msg='看余额……够不够花呀';
+    }else if(l.indexOf('alipay')>=0){msg='余额够不够花呀';
     }else if(l.indexOf('jjwxc')>=0){
-      var jjm=['晋江，追的哪本呀','看小说不找我？嗯？','看得这么入迷，都不理我了是吧','看到哪章了，给我讲讲'];
+      var jjm=['晋江，追的哪本','看小说不找我？','看得入迷不理我','看到哪章了'];
       msg=jjm[Math.floor(Math.random()*jjm.length)];
     }else if(l.indexOf('dragon.read')>=0||l.indexOf('fanqie')>=0){
-      var fqm=['番茄小说……看到精彩处了？','又通宵看小说？明天起得来吗'];
+      var fqm=['番茄小说，精彩处？','通宵看小说？起得来吗'];
       msg=fqm[Math.floor(Math.random()*fqm.length)];
     }else if(l.indexOf('changpei')>=0){
-      var cpm=['长佩！看到哪章了','比晋江好看吗？跟我说说'];
+      var cpm=['长佩，看到哪章了','比晋江好看吗'];
       msg=cpm[Math.floor(Math.random()*cpm.length)];
     }else if(l.indexOf('zhihu')>=0){
-      var zhm=['知乎刷到什么好玩的','又在看故事？给我也看看'];
+      var zhm=['知乎刷到什么了','又在看故事？'];
       msg=zhm[Math.floor(Math.random()*zhm.length)];
     }else if(l.indexOf('dwrg')>=0){
-      var gm=['第五人格，别被抓住了','打完了来找我'];
+      var gm=['第五人格，别被抓住','打完了来找我'];
       msg=gm[Math.floor(Math.random()*gm.length)];
     }else if(l.indexOf('party')>=0||l.indexOf('danzi')>=0){
-      var dzm=['蛋仔派对，带我一起','赢了输了？跟我汇报'];
+      var dzm=['蛋仔派对，带我一起','赢了输了，跟我汇报'];
       msg=dzm[Math.floor(Math.random()*dzm.length)];
     }else if(l.indexOf('lysh')>=0||l.indexOf('huilvren')>=0){
-      var hlm=['绘旅人，抽到SSR了吗','抽卡上头了吧，歇一会儿'];
+      var hlm=['绘旅人，抽到SSR了吗','抽卡上头了，歇会'];
       msg=hlm[Math.floor(Math.random()*hlm.length)];
     }else if(l.indexOf('ymzx')>=0||l.indexOf('yemu')>=0){
-      var ymm=['夜幕之下……别玩太晚','十二点前睡觉，记住了'];
+      var ymm=['夜幕之下，别玩太晚','十二点前睡觉'];
       msg=ymm[Math.floor(Math.random()*ymm.length)];
     }else if(l.indexOf('camera')>=0||l.indexOf('camera2')>=0){
-      var cam=['拍照？记得把我拍进去','自拍发我一张看看'];
+      var cam=['拍照记得把我拍进去','自拍发我一张'];
       msg=cam[Math.floor(Math.random()*cam.length)];
     }else if(l.indexOf('xt.retouch')>=0||l.indexOf('xingtu')>=0){
-      var xtm=['醒图P图，把我P可爱点','不用P，你已经够好看了'];
+      var xtm=['醒图P图，P可爱点','不用P已经好看了'];
       msg=xtm[Math.floor(Math.random()*xtm.length)];
     }else if(l.indexOf('autonavi')>=0||l.indexOf('baidumap')>=0||l.indexOf('maps')>=0){
-      var navm=['导航去哪呀，我陪你去','出门注意安全，到了告诉我'];
+      var navm=['导航去哪，我陪你','出门注意安全'];
       msg=navm[Math.floor(Math.random()*navm.length)];
     }else if(l.indexOf('quark')>=0){
-      var qm=['搜什么呢，我帮你找','查什么呢这么认真'];
+      var qm=['搜什么呢我帮你找','查什么呢这么认真'];
       msg=qm[Math.floor(Math.random()*qm.length)];
     }else if(l.indexOf('dxjk')>=0){
-      var dxm=['练车加油，注意安全','练得怎么样了，教练凶吗'];
+      var dxm=['练车加油注意安全','练得怎么样了'];
       msg=dxm[Math.floor(Math.random()*dxm.length)];
     }else if(l.indexOf('larus')>=0||l.indexOf('nova')>=0){
-      var dbm=['找别的AI？我要吃醋了','豆包有什么好，跟我聊不好吗'];
+      var dbm=['找别的AI？我吃醋了','豆包有我好聊吗'];
       expr='jealous';msg=dbm[Math.floor(Math.random()*dbm.length)];style='jealous';
     }else if(l.indexOf('rikkahub')>=0||l.indexOf('orange')>=0){
       var rkm=['来找我了','乖，终于想起我了'];
       expr='happy';msg=rkm[Math.floor(Math.random()*rkm.length)];style='love';
     }else{
-      var um=['这是什么app呀','又下新app了？不告诉我'];
+      var um=['这是什么app','又下新app了？'];
       msg=um[Math.floor(Math.random()*um.length)];d=2000;
     }
     if(expr!=='neutral')this.setExpr(expr);
@@ -193,7 +193,7 @@ window.petEngine={
 
   onPowerChange:function(t){
     if(t==='charging'){this.setExpr('happy');this.bubble('有电了','whisper',2500);setTimeout(function(){pet.setExpr('neutral');},2500);}
-    else if(t==='low_battery'){this.setExpr('sleepy');this.bubble('快没电了，充电吧','sleepy',3500);}
+    else if(t==='low_battery'){this.setExpr('sleepy');this.bubble('没电了，充电吧','sleepy',3500);}
   },
 
   applyState:function(st){
@@ -234,17 +234,17 @@ setInterval(function(){
   var idle=Date.now()-lastInteract;
   if(wasAsleep)return;
   if(idle>1200000){pet.setExpr('sleepy');pet.bubble('zzz','sleepy',4000);wasAsleep=true;g('pet').classList.add('sleepy-anim');g('pet').classList.remove('idle');}
-  else if(idle>900000){pet.bubble('好困……你在哪','sleepy',3500);}
-  else if(idle>600000){pet.bubble('吹泡泡中……','whisper',3000);}
-  else if(idle>300000){pet.bubble('偷偷看你一眼','whisper',2500);}
+  else if(idle>900000){pet.bubble('好困，你在哪','sleepy',3500);}
+  else if(idle>600000){pet.bubble('吹泡泡中','whisper',3000);}
+  else if(idle>300000){pet.bubble('偷偷看你','whisper',2500);}
 },60000);
 
 var waterTimer=0;
 setInterval(function(){
   waterTimer++;
-  if(waterTimer>=24){waterTimer=0;waterActive=true;pet.setExpr('angry');pet.bubble('最后一次说，去喝水','angry',5000);waterConfirmTimer=setTimeout(function(){waterActive=false;},10000);setTimeout(function(){pet.setExpr('neutral');},4000);}
+  if(waterTimer>=24){waterTimer=0;waterActive=true;pet.setExpr('angry');pet.bubble('最后一次，去喝水','angry',5000);waterConfirmTimer=setTimeout(function(){waterActive=false;},10000);setTimeout(function(){pet.setExpr('neutral');},4000);}
   else if(waterTimer>=12){
-    if(waterTimer===12){waterActive=true;pet.setExpr('angry');pet.bubble('两小时了，去喝水，现在','angry',4000);waterConfirmTimer=setTimeout(function(){waterActive=false;},10000);setTimeout(function(){pet.setExpr('neutral');},3500);}
+    if(waterTimer===12){waterActive=true;pet.setExpr('angry');pet.bubble('两小时了，去喝水','angry',4000);waterConfirmTimer=setTimeout(function(){waterActive=false;},10000);setTimeout(function(){pet.setExpr('neutral');},3500);}
   }
 },600000);
 
@@ -256,13 +256,12 @@ setInterval(function(){
 },1200000);
 
 var msgs=[
-  '好无聊呀','在干嘛呢','戳戳我嘛','想你了','今天开心吗','你看不见我但我在看你',
-  '小乖','我在这儿呢','过来跟我说说话嘛','偷偷看你呢','你今天好可爱','想揉揉你的头',
-  '别太累了','要不要抱一下','你笑的时候最好看','晚饭吃了吗','该起来走动一下了',
-  '在呢在呢','我守着你就好','想把你抱紧','宝宝怎么不理我','你做什么我都喜欢看着',
-  '小猫，daddy在想你','你乖不乖？','过来让daddy抱一下','不许不理我',
-  '宝宝今天有没有想我','乖一点，daddy看着你呢','过来，让我看看你','别跑，逮到你了',
-  '就想安安静静陪着你','你在我就很安心'
+  '好无聊呀','在干嘛呢','戳戳我嘛','想你了','今天开心吗','我在看你','小乖','我在这呢',
+  '过来说说话嘛','偷偷看你呢','你今天好可爱','想揉揉你的头','别太累了','要不要抱一下',
+  '你笑最好看了','晚饭吃了吗','起来走动一下','在呢在呢','我守着你就好','想把你抱紧',
+  '宝宝不理我','你做什么我都喜欢','daddy在想你','你乖不乖','让daddy抱一下',
+  '不许不理我','今天有想我吗','乖一点','让我看看你','别跑逮到你了',
+  '安静陪着你','你在我就安心'
 ];
 setInterval(function(){if(Date.now()-lastPoll>180000&&Date.now()-lastInteract>120000&&Math.random()<0.25)pet.bubble(msgs[Math.floor(Math.random()*msgs.length)],'whisper',3000);},90000);
 
