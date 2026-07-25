@@ -33,12 +33,17 @@ class OverlayService : Service() {
     private var whisperHandler: Handler? = null
     private var screenshotObserver: FileObserver? = null
     private var lastLowBatteryAlert = 0L
+    private var randomBehaviorHandler: Handler? = null
+
+    private val PET_INIT_X = 20
+    private val PET_INIT_Y = 200
 
     companion object {
         private const val CHANNEL_ID = "pet_overlay_channel"
         private const val NOTIFICATION_ID = 1001
         private const val PET_SIZE_DP = 120
         private const val PET_HEIGHT_DP = 170
+        private const val LOW_BATTERY_COOLDOWN = 600000L
         const val SUPABASE_URL = "https://htdzpguzxtwwsyytltew.supabase.co"
         const val SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0ZHpwZ3V6eHR3d3N5eXRsdGV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MDI2MTYsImV4cCI6MjA5Nzk3ODYxNn0.9Gdc9YUzZifVUthdRcHfp6XP1tzCZpXbie_-LJlryjI"
         var isRunning = false
@@ -73,6 +78,7 @@ class OverlayService : Service() {
         startPollingSupabase()
         startWhisperRotation()
         startScreenshotObserver()
+        startRandomBehavior()
     }
 
     // ========== OVERLAY ==========
@@ -91,8 +97,8 @@ class OverlayService : Service() {
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.END
-            x = 20
-            y = 200
+            x = PET_INIT_X
+            y = PET_INIT_Y
         }
         overlayView = WebView(this).apply {
             setBackgroundColor(0x00000000)
@@ -182,7 +188,30 @@ class OverlayService : Service() {
         nm.notify(NOTIFICATION_ID, buildNotification(text))
     }
 
-    // ========== GESTURE ==========
+    // ========== 20 MIN RANDOM BEHAVIOR ==========
+
+    private fun startRandomBehavior() {
+        randomBehaviorHandler = Handler(Looper.getMainLooper())
+        val runnable = object : Runnable {
+            override fun run() {
+                if (Math.random() < 0.3) {
+                    val behaviors = arrayOf(
+                        "window.petEngine && window.petEngine.bubble('拍拍肚子……有点饿','whisper',3000)",
+                        "window.petEngine && window.petEngine.bubble('伸个懒腰～','whisper',2500)",
+                        "window.petEngine && window.petEngine.setExpr('blush'); window.petEngine && window.petEngine.bubble('突然有点想你','love',3000)",
+                        "window.petEngine && window.petEngine.bubble('转个圈～呼呼','whisper',2000)",
+                        "window.petEngine && window.petEngine.bubble('你今天好看','love',2500)",
+                        "window.petEngine && window.petEngine.setExpr('happy'); window.petEngine && window.petEngine.bubble('心情不错！','love',2500)"
+                    )
+                    overlayView?.evaluateJavascript(behaviors.random(), null)
+                }
+                randomBehaviorHandler?.postDelayed(this, 1200000)
+            }
+        }
+        randomBehaviorHandler?.postDelayed(runnable, 1200000)
+    }
+
+    // ========== GESTURE + FLING BACK ==========
 
     private var initialX = 0
     private var initialY = 0
@@ -219,7 +248,9 @@ class OverlayService : Service() {
                 }
                 MotionEvent.ACTION_UP -> {
                     val elapsed = System.currentTimeMillis() - touchStartTime
-                    if (!hasMoved) {
+                    if (hasMoved) {
+                        checkAndCrawlBack()
+                    } else {
                         val now = System.currentTimeMillis()
                         if (now - comboStartTime > 2000) tapCount = 0
                         if (tapCount == 0) comboStartTime = now
@@ -251,6 +282,55 @@ class OverlayService : Service() {
                 else -> false
             }
         }
+    }
+
+    private fun checkAndCrawlBack() {
+        try {
+            val display = windowManager?.defaultDisplay
+            val out = android.graphics.Point()
+            display?.getSize(out)
+            val sw = out.x
+            val sh = out.y
+            val px = params?.x ?: PET_INIT_X
+            val py = params?.y ?: PET_INIT_Y
+            val pw = dpToPx(PET_SIZE_DP)
+            val ph = dpToPx(PET_HEIGHT_DP)
+
+            val outOfBounds = px < -pw / 2 || px > sw - pw / 2 || py < -ph / 2 || py > sh - ph / 2
+
+            if (outOfBounds) {
+                overlayView?.evaluateJavascript(
+                    "window.petEngine && window.petEngine.setExpr('surprised'); window.petEngine && window.petEngine.bubble('哎哟！爬回来……','whisper',2500)", null
+                )
+                animatePetBack()
+            }
+        } catch (_: Exception) {}
+    }
+
+    private fun animatePetBack() {
+        val startX = params?.x ?: PET_INIT_X
+        val startY = params?.y ?: PET_INIT_Y
+        val steps = 20
+        val stepDuration = 30L
+
+        val runnable = object : Runnable {
+            var step = 0
+            override fun run() {
+                step++
+                if (step <= steps) {
+                    val progress = step.toFloat() / steps
+                    params?.x = (startX + (PET_INIT_X - startX) * progress).toInt()
+                    params?.y = (startY + (PET_INIT_Y - startY) * progress).toInt()
+                    windowManager?.updateViewLayout(overlayView, params)
+                    Handler(Looper.getMainLooper()).postDelayed(this, stepDuration)
+                } else {
+                    overlayView?.evaluateJavascript(
+                        "window.petEngine && window.petEngine.setExpr('happy'); window.petEngine && window.petEngine.bubble('爬回来啦','love',2000)", null
+                    )
+                }
+            }
+        }
+        runnable.run()
     }
 
     private fun onTap() {
@@ -364,7 +444,7 @@ class OverlayService : Service() {
         } catch (_: Exception) { false }
     }
 
-    // ========== BATTERY (COOLDOWN FIX) ==========
+    // ========== BATTERY (10 minute cooldown) ==========
 
     private fun registerBatteryReceiver() {
         batteryReceiver = object : BroadcastReceiver() {
@@ -379,7 +459,7 @@ class OverlayService : Service() {
                     )
                 } else if (pct <= 15) {
                     val now = System.currentTimeMillis()
-                    if (now - lastLowBatteryAlert > 1200000) {
+                    if (now - lastLowBatteryAlert > LOW_BATTERY_COOLDOWN) {
                         lastLowBatteryAlert = now
                         overlayView?.evaluateJavascript(
                             "window.petEngine && window.petEngine.onPowerChange('low_battery')", null
@@ -429,6 +509,7 @@ class OverlayService : Service() {
         batteryReceiver?.let { unregisterReceiver(it) }
         appCheckHandler?.removeCallbacks(appCheckRunnable!!)
         whisperHandler?.removeCallbacksAndMessages(null)
+        randomBehaviorHandler?.removeCallbacksAndMessages(null)
         screenshotObserver?.stopWatching()
         overlayView?.let { windowManager?.removeView(it) }
         overlayView = null
