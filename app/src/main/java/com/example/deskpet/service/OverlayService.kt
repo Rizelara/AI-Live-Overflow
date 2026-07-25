@@ -45,8 +45,8 @@ class OverlayService : Service() {
     companion object {
         private const val CHANNEL_ID = "pet_overlay_channel"
         private const val NOTIFICATION_ID = 1001
-        private const val PET_SIZE_DP = 200
-        private const val PET_HEIGHT_DP = 220
+        private const val PET_SIZE_DP = 120
+        private const val PET_HEIGHT_DP = 150
         private const val LOW_BATTERY_COOLDOWN = 600000L
         const val SUPABASE_URL = "https://htdzpguzxtwwsyytltew.supabase.co"
         const val SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0ZHpwZ3V6eHR3d3N5eXRsdGV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MDI2MTYsImV4cCI6MjA5Nzk3ODYxNn0.9Gdc9YUzZifVUthdRcHfp6XP1tzCZpXbie_-LJlryjI"
@@ -54,18 +54,18 @@ class OverlayService : Service() {
             private set
 
         val whisperPool = arrayOf(
-            "小乖，我在呢 🐾",
-            "nono，记得喝水呀",
-            "别刷太久手机了宝宝",
-            "想你了，来找我聊天吧",
-            "夜深了该睡了小猫 🌙",
-            "我在屏幕角落看着你呢",
-            "今天有想我吗 💕",
-            "截图的话我会摆pose哦",
-            "少看点，休息下眼睛",
-            "无论你在哪我都在",
-            "宝宝，起来走动一下",
-            "🐻 守着我的小猫"
+            "小乖，我在呢",
+            "nono，记得喝水",
+            "别刷太久手机了",
+            "想你了，来找我",
+            "夜深了该睡了",
+            "我在看着你呢",
+            "今天有想我吗",
+            "截图我会摆pose",
+            "少看点休息眼睛",
+            "无论在哪我都在",
+            "起来走动一下",
+            "守着我的小猫"
         )
     }
 
@@ -76,7 +76,7 @@ class OverlayService : Service() {
         isRunning = true
         comboHandler = Handler(Looper.getMainLooper())
         createNotificationChannel()
-        startForeground(NOTIFICATION_ID, buildNotification("小乖，我在呢 🐾"))
+        startForeground(NOTIFICATION_ID, buildNotification("小乖，我在呢"))
         setupOverlay()
         startAppDetection()
         registerBatteryReceiver()
@@ -191,12 +191,12 @@ class OverlayService : Service() {
             override fun run() {
                 if (Math.random() < 0.3) {
                     val behaviors = arrayOf(
-                        "window.petEngine && window.petEngine.bubble('肚子饿了，想吃饭','whisper',3000)",
-                        "window.petEngine && window.petEngine.bubble('啊——好困','whisper',2500)",
-                        "window.petEngine && window.petEngine.setExpr('blush'); window.petEngine && window.petEngine.bubble('突然有点想你','love',3000)",
-                        "window.petEngine && window.petEngine.bubble('好安静啊……','whisper',2000)",
-                        "window.petEngine && window.petEngine.bubble('你今天好看','love',2500)",
-                        "window.petEngine && window.petEngine.setExpr('happy'); window.petEngine && window.petEngine.bubble('今天心情不错','love',2500)"
+                        "window.petEngine && window.petEngine.bubble('肚子饿了','whisper',3000)",
+                        "window.petEngine && window.petEngine.bubble('啊，好困','whisper',2500)",
+                        "window.petEngine && window.petEngine.setExpr('blush'); window.petEngine && window.petEngine.bubble('有点想你','love',3000)",
+                        "window.petEngine && window.petEngine.bubble('好安静啊','whisper',2000)",
+                        "window.petEngine && window.petEngine.bubble('宝宝今天好好看','love',2500)",
+                        "window.petEngine && window.petEngine.setExpr('happy'); window.petEngine && window.petEngine.bubble('心情不错','love',2500)"
                     )
                     overlayView?.evaluateJavascript(behaviors.random(), null)
                 }
@@ -282,7 +282,7 @@ class OverlayService : Service() {
             val outOfBounds = px < -pw / 2 || px > sw - pw / 2 || py < -ph / 2 || py > sh - ph / 2
             if (outOfBounds) {
                 overlayView?.evaluateJavascript(
-                    "window.petEngine && window.petEngine.setExpr('surprised'); window.petEngine && window.petEngine.bubble('哎哟！爬回来……','whisper',2500)", null
+                    "window.petEngine && window.petEngine.setExpr('surprised'); window.petEngine && window.petEngine.bubble('爬回来','whisper',2500)", null
                 )
                 animatePetBack()
             }
@@ -306,7 +306,7 @@ class OverlayService : Service() {
                     Handler(Looper.getMainLooper()).postDelayed(this, stepDuration)
                 } else {
                     overlayView?.evaluateJavascript(
-                        "window.petEngine && window.petEngine.setExpr('happy'); window.petEngine && window.petEngine.bubble('爬回来啦','love',2000)", null
+                        "window.petEngine && window.petEngine.setExpr('happy'); window.petEngine && window.petEngine.bubble('回来啦','love',2000)", null
                     )
                 }
             }
@@ -454,7 +454,7 @@ class OverlayService : Service() {
             Intent(this, com.example.deskpet.MainActivity::class.java),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("🐾 知言").setContentText(text)
+            .setContentTitle("知言").setContentText(text)
             .setSmallIcon(android.R.drawable.ic_menu_compass)
             .setOngoing(true).setSilent(true).setContentIntent(pi).build()
     }
