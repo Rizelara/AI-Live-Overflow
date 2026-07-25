@@ -177,11 +177,19 @@ class OverlayService : Service() {
                 whisperHandler?.postDelayed(this, 3600000)
             }
         }
-        whisperHandlerpost }
+        val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        nm.createNotificationChannel(channel)
+        whisperHandler?.postDelayed(runnable, 3600000)
+    }
 
- val nm = getSystemService(NOTIFICATION_SERVICE) as Notificationify build }
+    fun updateNotification(text: String) {
+        val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        nm.notify(NOTIFICATION_ID, buildNotification(text))
+    }
 
-   .get val runnable = object : Runnable {
+    private fun startRandomBehavior() {
+        randomBehaviorHandler = Handler(Looper.getMainLooper())
+        val runnable = object : Runnable {
             override fun run() {
                 if (Math.random() < 0.3) {
                     val behaviors = arrayOf(
@@ -463,7 +471,10 @@ class OverlayService : Service() {
 
     inner class PetBridge {
         @JavascriptInterface
-        fun updateNotification(text: String) { this@OverlayService.updateNotification(text) }
+        fun updateNotification(text: String) {
+            this@OverlayService.updateNotification(text)
+        }
+
         @JavascriptInterface
         fun getCurrentTime(): String {
             val cal = java.util.Calendar.getInstance()
