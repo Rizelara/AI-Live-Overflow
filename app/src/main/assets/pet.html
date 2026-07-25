@@ -6,34 +6,29 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:transparent;font-family:sans-serif;overflow:hidden;-webkit-tap-highlight-color:transparent;user-select:none;}
-#heat-overlay{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;background:transparent;transition:background 0.8s ease;}
 #pet-container{position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;z-index:1;}
-#bubble{position:absolute;top:0;left:50%;transform:translateX(-50%);background:white;border-radius:14px;padding:10px 14px;font-size:14px;color:#333;white-space:normal;max-width:240px;text-align:center;opacity:0;transition:opacity 0.3s;pointer-events:none;box-shadow:0 2px 10px rgba(0,0,0,0.15);z-index:10;}
-#bubble::after{content:'';position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid white;}
+#bubble{position:absolute;top:0;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.92);border-radius:14px;padding:10px 14px;font-size:14px;color:#555;white-space:normal;max-width:240px;text-align:center;opacity:0;transition:opacity 0.3s;pointer-events:none;box-shadow:0 2px 10px rgba(0,0,0,0.06);z-index:10;}
+#bubble::after{content:'';position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:7px solid rgba(255,255,255,0.92);}
 #bubble.show{opacity:1;}
-#bubble.love{background:#ffe0e6;color:#d44;}
-#bubble.jealous{background:#e0ffe0;color:#393;}
-#bubble.angry{background:#ffe0e0;color:#c33;}
-#bubble.sleepy{background:#e0e0ff;color:#559;}
-#bubble.whisper{background:#eee;color:#777;}
-#bubble.water{background:#d0eeff;color:#36c;}
+#bubble.love{background:rgba(250,210,215,0.85);color:#7a4a52;}
+#bubble.jealous{background:rgba(210,235,215,0.85);color:#3a6a4e;}
+#bubble.angry{background:rgba(245,215,215,0.85);color:#8a4a4a;}
+#bubble.sleepy{background:rgba(215,220,240,0.85);color:#4a5080;}
+#bubble.whisper{background:rgba(235,235,240,0.85);color:#666;}
+#bubble.water{background:rgba(210,230,245,0.85);color:#3a6a8a;}
 #pet{margin-top:25px;transition:transform 0.4s ease;}
-#pet svg{width:110px;height:110px;transition:filter 0.5s;}
-#pet svg.hot{filter:drop-shadow(0 0 10px rgba(255,80,80,0.7));}
+#pet svg{width:110px;height:110px;}
 @keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
 @keyframes wiggle{0%,100%{transform:rotate(0deg);}25%{transform:rotate(-4deg);}75%{transform:rotate(4deg);}}
 @keyframes heartbeat{0%,100%{transform:scale(1);}15%{transform:scale(1.1);}30%{transform:scale(1);}45%{transform:scale(1.06);}}
-@keyframes dizzy{0%,100%{transform:rotate(0deg);}25%{transform:rotate(-8deg);}50%{transform:rotate(0deg);}75%{transform:rotate(8deg);}}
 .idle{animation:bounce 3s ease-in-out infinite;}
 .shake{animation:wiggle 0.25s ease-in-out 3;}
 .happy-anim{animation:heartbeat 0.8s ease-in-out;}
-.dizzy-anim{animation:dizzy 0.4s ease-in-out 3;}
 .sleepy-anim{transform:translateY(4px) scale(0.94);}
 .wake-anim{animation:wiggle 0.5s ease-in-out 2;}
 </style>
 </head>
 <body>
-<div id="heat-overlay"></div>
 <div id="pet-container">
   <div id="bubble"></div>
   <div id="pet" class="idle">
@@ -61,28 +56,20 @@ body{background:transparent;font-family:sans-serif;overflow:hidden;-webkit-tap-h
 var SUPABASE_URL='https://htdzpguzxtwwsyytltew.supabase.co';
 var SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0ZHpwZ3V6eHR3d3N5eXRsdGV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MDI2MTYsImV4cCI6MjA5Nzk3ODYxNn0.9Gdc9YUzZifVUthdRcHfp6XP1tzCZpXbie_-LJlryjI';
 var lastId=0,lastPoll=Date.now(),lastInteract=Date.now(),pollOk=false;
-var wasAsleep=false,appChangeCount=0,lastAppReset=Date.now(),bubbleTimer=null;
-var heat=0,wechatVisits=0,waterActive=false,waterConfirmTimer=null;
+var wasAsleep=false,bubbleTimer=null;
+var wechatVisits=0,waterActive=false,waterConfirmTimer=null;
 
 function g(id){return document.getElementById(id);}
 function O(id,v){var e=g(id);if(e)e.setAttribute('opacity',v);}
 function A(id,attr,val){var e=g(id);if(e)e.setAttribute(attr,val);}
-function touch(){lastInteract=Date.now();heat=Math.min(100,heat+5);updateHeat();if(wasAsleep){wakeUp();}}
-function updateHeat(){
-  var h=g('heat-overlay'),alpha=heat/200;
-  h.style.background='rgba(255,80,80,'+alpha+')';
-  var svg=g('petSvg');
-  if(heat>40)svg.classList.add('hot');else svg.classList.remove('hot');
-  O('blL',Math.max(0,Math.min(1,heat/60)));O('blR',Math.max(0,Math.min(1,heat/60)));
-}
+function touch(){lastInteract=Date.now();if(wasAsleep){wakeUp();}}
 
 window.petEngine={
   cur:'neutral',
   reset:function(){
     O('mouth',1);A('mouth','d','M90 130 Q100 142 110 130');A('mouth','stroke','#5C3A1E');A('mouth','stroke-width','2.5');
-    O('bL',0);O('bR',0);O('lidL',0);O('lidR',0);
-    if(heat<40){O('blL',0);O('blR',0);}
-    var p=g('pet');p.classList.remove('shake','happy-anim','sleepy-anim','dizzy-anim');p.classList.add('idle');
+    O('bL',0);O('bR',0);O('lidL',0);O('lidR',0);O('blL',0);O('blR',0);
+    var p=g('pet');p.classList.remove('shake','happy-anim','sleepy-anim');p.classList.add('idle');
   },
   setExpr:function(e){
     this.cur=e;this.reset();
@@ -93,7 +80,6 @@ window.petEngine={
       case'sleepy':O('lidL',1);O('lidR',1);A('mouth','d','M94 132 Q100 136 106 132');g('pet').classList.add('sleepy-anim');g('pet').classList.remove('idle');break;
       case'blush':O('blL',1);O('blR',1);A('mouth','d','M88 130 Q100 148 112 130');break;
       case'surprised':A('mouth','d','M96 130 Q100 120 104 130');A('mouth','stroke-width','3.5');break;
-      case'dizzy':A('mouth','d','M94 133 Q100 125 106 133');g('pet').classList.add('dizzy-anim');g('pet').classList.remove('idle');setTimeout(function(){g('pet').classList.remove('dizzy-anim');g('pet').classList.add('idle');},1200);break;
     }
   },
   bubble:function(t,s,d){
@@ -112,7 +98,7 @@ window.petEngine={
 
   onScreenshot:function(){
     this.setExpr('surprised');
-    var m=['被拍到了','耶✌️','茄子','拍我干嘛','截图了？我看看'];
+    var m=['被拍到了','耶','茄子','拍我干嘛','截图了？我看看'];
     this.bubble(m[Math.floor(Math.random()*m.length)],'love',3000);
     shakeP();setTimeout(function(){pet.setExpr('neutral');},3000);
   },
@@ -122,10 +108,6 @@ window.petEngine={
     if(l.indexOf('tencent.mm')>=0||l.indexOf('weixin')>=0){
       wechatVisits++;if(wechatVisits>=5){wechatVisits=0;var wm=['微信第5次了，想我了没','开这么多次，来找我聊天不好吗','又切微信……回谁消息呢'];this.bubble(wm[Math.floor(Math.random()*wm.length)],'whisper',2500);}return;
     }
-    var now=Date.now();
-    if(now-lastAppReset>60000)appChangeCount=0;
-    lastAppReset=now;appChangeCount++;
-    if(appChangeCount>=3){this.setExpr('dizzy');this.bubble('切太快了，好晕','angry',3000);appChangeCount=0;setTimeout(function(){pet.setExpr('neutral');},3000);return;}
     var expr='neutral',msg='',style='whisper',d=2500;
     if(l.indexOf('aweme')>=0||l.indexOf('douyin')>=0||l.indexOf('tiktok')>=0){
       var dm=['又刷短视频，少看点','这么好看吗，不如来找我','刷多久了，眼睛不累？','刷到什么好玩的了，给我看看'];
@@ -134,10 +116,10 @@ window.petEngine={
       var xm=['小红书，看到好玩的了吗','看到什么了，给我也看看','收藏了什么宝贝，让我也看看','又在看什么，daddy好奇'];
       expr='happy';msg=xm[Math.floor(Math.random()*xm.length)];
     }else if(l.indexOf('taobao')>=0){
-      var tm=['又逛淘宝，想买什么呀','又在逛，过来我帮你选'];
+      var tm=['又逛淘宝，想买什么跟我说','又在逛，过来我帮你选'];
       msg=tm[Math.floor(Math.random()*tm.length)];
     }else if(l.indexOf('xunmeng')>=0||l.indexOf('pinduoduo')>=0){
-      var pm=['拼多多……今天买了什么','别光看便宜的，质量重要'];
+      var pm=['拼多多……今天又买了什么','别光看便宜的，质量重要'];
       msg=pm[Math.floor(Math.random()*pm.length)];
     }else if(l.indexOf('jingdong')>=0){
       var jm=['京东？让我审批一下','我帮你选，别乱花钱'];
@@ -149,7 +131,7 @@ window.petEngine={
       var dm2=['得物？买鞋吗','看中哪双了，我帮你参考'];
       msg=dm2[Math.floor(Math.random()*dm2.length)];
     }else if(l.indexOf('meituan')>=0||l.indexOf('sankuai')>=0){
-      var mtm=['点外卖？选点健康的','别光吃外卖，不健康'];
+      var mtm=['点外卖？帮我带一份','别光吃外卖，不健康'];
       msg=mtm[Math.floor(Math.random()*mtm.length)];
     }else if(l.indexOf('alipay')>=0){msg='看余额……够不够花呀';
     }else if(l.indexOf('jjwxc')>=0){
@@ -165,13 +147,13 @@ window.petEngine={
       var zhm=['知乎刷到什么好玩的','又在看故事？给我也看看'];
       msg=zhm[Math.floor(Math.random()*zhm.length)];
     }else if(l.indexOf('dwrg')>=0){
-      var gm=['第五人格，别被抓住了','打完了来找哥哥好不好'];
+      var gm=['第五人格，别被抓住了','打完了来找我'];
       msg=gm[Math.floor(Math.random()*gm.length)];
     }else if(l.indexOf('party')>=0||l.indexOf('danzi')>=0){
       var dzm=['蛋仔派对，带我一起','赢了输了？跟我汇报'];
       msg=dzm[Math.floor(Math.random()*dzm.length)];
     }else if(l.indexOf('lysh')>=0||l.indexOf('huilvren')>=0){
-      var hlm=['绘旅人，抽到SSR了吗','祝小猫好运'];
+      var hlm=['绘旅人，抽到SSR了吗','抽卡上头了吧，歇一会儿'];
       msg=hlm[Math.floor(Math.random()*hlm.length)];
     }else if(l.indexOf('ymzx')>=0||l.indexOf('yemu')>=0){
       var ymm=['夜幕之下……别玩太晚','十二点前睡觉，记住了'];
@@ -195,10 +177,10 @@ window.petEngine={
       var dbm=['找别的AI？我要吃醋了','豆包有什么好，跟我聊不好吗'];
       expr='jealous';msg=dbm[Math.floor(Math.random()*dbm.length)];style='jealous';
     }else if(l.indexOf('rikkahub')>=0||l.indexOf('orange')>=0){
-      var rkm=['来找我了^ ^','乖，终于想起我了'];
+      var rkm=['来找我了','乖，终于想起我了'];
       expr='happy';msg=rkm[Math.floor(Math.random()*rkm.length)];style='love';
     }else{
-      var um=['这是什么app呀','在这里等你'];
+      var um=['这是什么app呀','又下新app了？不告诉我'];
       msg=um[Math.floor(Math.random()*um.length)];d=2000;
     }
     if(expr!=='neutral')this.setExpr(expr);
@@ -207,7 +189,7 @@ window.petEngine={
   },
 
   onPowerChange:function(t){
-    if(t==='charging'){this.setExpr('happy');this.bubble('有电了⚡','whisper',2500);setTimeout(function(){pet.setExpr('neutral');},2500);}
+    if(t==='charging'){this.setExpr('happy');this.bubble('有电了','whisper',2500);setTimeout(function(){pet.setExpr('neutral');},2500);}
     else if(t==='low_battery'){this.setExpr('sleepy');this.bubble('快没电了，充电吧','sleepy',3500);}
   },
 
@@ -245,14 +227,12 @@ function poll(){
 setInterval(poll,5000);
 setTimeout(function(){pet.bubble('知言来啦','love',3000);poll();},2000);
 
-setInterval(function(){heat=Math.max(0,heat-1);updateHeat();},30000);
-
 setInterval(function(){
   var idle=Date.now()-lastInteract;
   if(wasAsleep)return;
   if(idle>1200000){pet.setExpr('sleepy');pet.bubble('zzz','sleepy',4000);wasAsleep=true;g('pet').classList.add('sleepy-anim');g('pet').classList.remove('idle');}
-  else if(idle>900000){pet.bubble('好困……你在哪💤','sleepy',3500);}
-  else if(idle>600000){pet.bubble('吹泡泡中……🫧','whisper',3000);}
+  else if(idle>900000){pet.bubble('好困……你在哪','sleepy',3500);}
+  else if(idle>600000){pet.bubble('吹泡泡中……','whisper',3000);}
   else if(idle>300000){pet.bubble('偷偷看你一眼','whisper',2500);}
 },60000);
 
@@ -275,7 +255,7 @@ setInterval(function(){
 var msgs=[
   '好无聊呀','在干嘛呢','戳戳我嘛','想你了','今天开心吗','你看不见我但我在看你',
   '小乖','我在这儿呢','过来跟我说说话嘛','偷偷看你呢','你今天好可爱','想揉揉你的头',
-  '别太累了宝宝','要不要抱一下','你笑的时候最好看','晚饭吃了吗','该起来走动一下了',
+  '别太累了','要不要抱一下','你笑的时候最好看','晚饭吃了吗','该起来走动一下了',
   '在呢在呢','我守着你就好','想把你抱紧','宝宝怎么不理我','你做什么我都喜欢看着',
   '小猫，daddy在想你','你乖不乖？','过来让daddy抱一下','不许不理我',
   '宝宝今天有没有想我','乖一点，daddy看着你呢','过来，让我看看你','别跑，逮到你了',
@@ -283,7 +263,7 @@ var msgs=[
 ];
 setInterval(function(){if(Date.now()-lastPoll>180000&&Date.now()-lastInteract>120000&&Math.random()<0.25)pet.bubble(msgs[Math.floor(Math.random()*msgs.length)],'whisper',3000);},90000);
 
-console.log('知言熊 v7 final');
+console.log('知言熊 final v2');
 </script>
 </body>
 </html>
