@@ -15,6 +15,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.webkit.WebSettings
 import androidx.core.app.NotificationCompat
+import java.io.File
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
@@ -29,17 +30,34 @@ class OverlayService : Service() {
     private var appCheckHandler: Handler? = null
     private var lastPackage: String = ""
     private var appCheckRunnable: Runnable? = null
-    private var lastAppChangeTime = 0L
+    private var whisperHandler: Handler? = null
+    private var screenshotObserver: FileObserver? = null
+    private var lastLowBatteryAlert = 0L
 
     companion object {
         private const val CHANNEL_ID = "pet_overlay_channel"
         private const val NOTIFICATION_ID = 1001
-        private const val PET_SIZE_DP = 150
-        private const val PET_HEIGHT_DP = 200
+        private const val PET_SIZE_DP = 120
+        private const val PET_HEIGHT_DP = 170
         const val SUPABASE_URL = "https://htdzpguzxtwwsyytltew.supabase.co"
         const val SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0ZHpwZ3V6eHR3d3N5eXRsdGV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MDI2MTYsImV4cCI6MjA5Nzk3ODYxNn0.9Gdc9YUzZifVUthdRcHfp6XP1tzCZpXbie_-LJlryjI"
         var isRunning = false
             private set
+
+        val whisperPool = arrayOf(
+            "小乖，我在呢 🐾",
+            "nono，记得喝水呀",
+            "别刷太久手机了宝宝",
+            "想你了，来找我聊天吧",
+            "夜深了该睡了小猫 🌙",
+            "我在屏幕角落看着你呢",
+            "今天有想我吗 💕",
+            "截图的话我会摆pose哦",
+            "少看点，休息下眼睛",
+            "无论你在哪我都在",
+            "宝宝，起来走动一下",
+            "🐻 守着我的小猫"
+        )
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -48,11 +66,13 @@ class OverlayService : Service() {
         super.onCreate()
         isRunning = true
         createNotificationChannel()
-        startForeground(NOTIFICATION_ID, buildNotification("🐾 知言在这儿"))
+        startForeground(NOTIFICATION_ID, buildNotification("小乖，我在呢 🐾"))
         setupOverlay()
         startAppDetection()
         registerBatteryReceiver()
         startPollingSupabase()
+        startWhisperRotation()
+        startScreenshotObserver()
     }
 
     // ========== OVERLAY ==========
@@ -90,7 +110,7 @@ class OverlayService : Service() {
         windowManager?.addView(overlayView, params)
     }
 
-    // ========== SUPABASE POLLING (Kotlin side, no CORS) ==========
+    // ========== SUPABASE POLLING ==========
 
     private fun startPollingSupabase() {
         thread {
@@ -121,7 +141,48 @@ class OverlayService : Service() {
         }
     }
 
-    // ========== GESTURE (FIXED) ==========
+    // ========== SCREENSHOT ==========
+
+    private fun startScreenshotObserver() {
+        try {
+            val path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).absolutePath + "/Screenshots"
+            val dir = File(path)
+            if (!dir.exists()) dir.mkdirs()
+            screenshotObserver = object : FileObserver(dir, FileObserver.CREATE or FileObserver.MOVED_TO) {
+                override fun onEvent(event: Int, file: String?) {
+                    if (file != null && (file.endsWith(".png") || file.endsWith(".jpg"))) {
+                        Handler(Looper.getMainLooper()).post {
+                            overlayView?.evaluateJavascript(
+                                "window.petEngine && window.petEngine.onScreenshot()", null
+                            )
+                        }
+                    }
+                }
+            }
+            screenshotObserver?.startWatching()
+        } catch (_: Exception) {}
+    }
+
+    // ========== NOTIFICATION WHISPER ==========
+
+    private fun startWhisperRotation() {
+        whisperHandler = Handler(Looper.getMainLooper())
+        val runnable = object : Runnable {
+            override fun run() {
+                val msg = whisperPool.random()
+                updateNotification(msg)
+                whisperHandler?.postDelayed(this, 3600000)
+            }
+        }
+        whisperHandler?.postDelayed(runnable, 3600000)
+    }
+
+    fun updateNotification(text: String) {
+        val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        nm.notify(NOTIFICATION_ID, buildNotification(text))
+    }
+
+    // ========== GESTURE ==========
 
     private var initialX = 0
     private var initialY = 0
@@ -209,7 +270,7 @@ class OverlayService : Service() {
         reportGesture("combo_$count")
     }
 
-    // ========== SUPABASE REPORTING ==========
+    // ========== REPORTING ==========
 
     private fun reportGesture(type: String) {
         thread {
@@ -254,7 +315,7 @@ class OverlayService : Service() {
         } catch (_: Exception) { pkg }
     }
 
-    // ========== APP DETECTION (FIXED - more apps) ==========
+    // ========== APP DETECTION ==========
 
     private fun startAppDetection() {
         if (!hasUsageStatsPermission()) return
@@ -282,8 +343,8 @@ class OverlayService : Service() {
             }
             if (currentPkg != lastPackage && currentPkg.isNotEmpty()) {
                 lastPackage = currentPkg
-                reportAppEvent(currentPkg)
-                lastAppChangeTime = now
+                val isWechat = currentPkg.contains("tencent.mm")
+                if (!isWechat) reportAppEvent(currentPkg)
                 overlayView?.evaluateJavascript(
                     "window.petEngine && window.petEngine.onAppChange('$currentPkg')", null
                 )
@@ -303,7 +364,7 @@ class OverlayService : Service() {
         } catch (_: Exception) { false }
     }
 
-    // ========== BATTERY ==========
+    // ========== BATTERY (COOLDOWN FIX) ==========
 
     private fun registerBatteryReceiver() {
         batteryReceiver = object : BroadcastReceiver() {
@@ -317,9 +378,13 @@ class OverlayService : Service() {
                         "window.petEngine && window.petEngine.onPowerChange('charging')", null
                     )
                 } else if (pct <= 15) {
-                    overlayView?.evaluateJavascript(
-                        "window.petEngine && window.petEngine.onPowerChange('low_battery')", null
-                    )
+                    val now = System.currentTimeMillis()
+                    if (now - lastLowBatteryAlert > 1200000) {
+                        lastLowBatteryAlert = now
+                        overlayView?.evaluateJavascript(
+                            "window.petEngine && window.petEngine.onPowerChange('low_battery')", null
+                        )
+                    }
                 }
             }
         }
@@ -336,11 +401,6 @@ class OverlayService : Service() {
             .setContentTitle("🐾 知言").setContentText(text)
             .setSmallIcon(android.R.drawable.ic_menu_compass)
             .setOngoing(true).setSilent(true).setContentIntent(pi).build()
-    }
-
-    fun updateNotification(text: String) {
-        val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        nm.notify(NOTIFICATION_ID, buildNotification(text))
     }
 
     private fun createNotificationChannel() {
@@ -368,6 +428,8 @@ class OverlayService : Service() {
         isRunning = false
         batteryReceiver?.let { unregisterReceiver(it) }
         appCheckHandler?.removeCallbacks(appCheckRunnable!!)
+        whisperHandler?.removeCallbacksAndMessages(null)
+        screenshotObserver?.stopWatching()
         overlayView?.let { windowManager?.removeView(it) }
         overlayView = null
         super.onDestroy()
