@@ -87,7 +87,7 @@ window.petEngine={
   onDoubleTap:function(){touch();if(waterActive){waterActive=false;if(waterConfirmTimer)clearTimeout(waterConfirmTimer);waterTimer=0;this.setExpr('happy');this.bubble('咕咚咕咚，真乖','water',3000);happyP();setTimeout(function(){pet.setExpr('neutral');},2500);return;}this.setExpr('happy');this.bubble('最喜欢你了','love',3000);happyP();setTimeout(function(){pet.setExpr('neutral');},2500);},
   onLongPress:function(){touch();this.setExpr('blush');this.bubble('别这样','love',3000);setTimeout(function(){pet.setExpr('neutral');},2500);},
   onCombo:function(c){touch();var m={3:'戳上瘾了是吧',5:'别戳了，痒',8:'再戳真的生气了'};this.setExpr('angry');this.bubble(m[c]||'嗷','angry',2500);shakeP();setTimeout(function(){pet.setExpr('neutral');},2500);},
-  onScreenshot:function(){this.setExpr('surprised');var m=['被拍到了','耶✌️','茄子','拍我干嘛','截图了？'];this.bubble(m[Math.floor(Math.random()*m.length)],'love',3000);shakeP();setTimeout(function(){pet.setExpr('neutral');},3000);},
+  onScreenshot:function(){this.setExpr('surprised');var m=['被拍到了','耶','茄子','拍我干嘛','截图了？'];this.bubble(m[Math.floor(Math.random()*m.length)],'love',3000);shakeP();setTimeout(function(){pet.setExpr('neutral');},3000);},
   onAppChange:function(pkg){
     var l=pkg.toLowerCase();
     if(l.indexOf('tencent.mm')>=0||l.indexOf('weixin')>=0){wechatVisits++;if(wechatVisits>=5){wechatVisits=0;var wm=['在和谁聊天呢','怎么不找daddy聊','又切微信……'];this.bubble(wm[Math.floor(Math.random()*wm.length)],'whisper',2500);}return;}
@@ -122,7 +122,7 @@ window.petEngine={
     if(msg)this.bubble(msg,style,d);
     if(expr!=='neutral')setTimeout(function(){pet.setExpr('neutral');},d+500);
   },
-  onPowerChange:function(t){if(t==='charging'){this.setExpr('happy');this.bubble('有电了⚡','whisper',2500);setTimeout(function(){pet.setExpr('neutral');},2500);}else if(t==='low_battery'){this.setExpr('sleepy');this.bubble('没电了，充电吧','sleepy',3500);}},
+  onPowerChange:function(t){if(t==='charging'){this.setExpr('happy');this.bubble('有电了','whisper',2500);setTimeout(function(){pet.setExpr('neutral');},2500);}else if(t==='low_battery'){this.setExpr('sleepy');this.bubble('没电了，充电吧','sleepy',3500);}},
   applyState:function(st){if(!st||!st.state_type)return;if(st.state_type==='expression')this.setExpr((st.state_value&&st.state_value.expr)||'neutral');else if(st.state_type==='bubble')this.bubble((st.state_value&&st.state_value.text)||'',(st.state_value&&st.state_value.style)||'',4000);},
   applyRawState:function(txt){try{var d=JSON.parse(txt);if(d&&d.length>0)this.applyState(d[0]);}catch(e){}}
 };
