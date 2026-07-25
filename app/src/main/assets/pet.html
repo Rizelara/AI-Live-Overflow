@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:transparent;font-family:sans-serif;overflow:hidden;-webkit-tap-highlight-color:transparent;user-select:none;}
+body{background:transparent;font-family:sans-serif;overflow:visible;-webkit-tap-highlight-color:transparent;user-select:none;}
 #pet-container{position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;z-index:1;}
-#bubble{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.92);border-radius:12px;padding:8px 10px;font-size:13px;color:#555;white-space:normal;max-width:96px;min-width:50px;text-align:center;opacity:0;transition:opacity 0.3s;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,0.08);z-index:10;line-height:1.4;}
-#bubble::after{content:'';position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid rgba(255,255,255,0.92);}
+#bubble{position:absolute;top:5px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.92);border-radius:10px;padding:6px 10px;font-size:13px;color:#555;white-space:nowrap;text-align:center;opacity:0;transition:opacity 0.3s;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,0.08);z-index:10;line-height:1.3;}
+#bubble::after{content:'';position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:5px solid rgba(255,255,255,0.92);}
 #bubble.show{opacity:1;}
 #bubble.love{background:rgba(250,210,215,0.85);color:#7a4a52;}
 #bubble.jealous{background:rgba(210,235,215,0.85);color:#3a6a4e;}
@@ -16,9 +16,9 @@ body{background:transparent;font-family:sans-serif;overflow:hidden;-webkit-tap-h
 #bubble.sleepy{background:rgba(215,220,240,0.85);color:#4a5080;}
 #bubble.whisper{background:rgba(235,235,240,0.85);color:#666;}
 #bubble.water{background:rgba(210,230,245,0.85);color:#3a6a8a;}
-#pet{margin-top:25px;transition:transform 0.4s ease;}
-#pet svg{width:75px;height:75px;}
-@keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
+#pet{margin-top:30px;transition:transform 0.4s ease;}
+#pet svg{width:70px;height:70px;}
+@keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-4px);}}
 @keyframes wiggle{0%,100%{transform:rotate(0deg);}25%{transform:rotate(-4deg);}75%{transform:rotate(4deg);}}
 @keyframes heartbeat{0%,100%{transform:scale(1);}15%{transform:scale(1.1);}30%{transform:scale(1);}45%{transform:scale(1.06);}}
 .idle{animation:bounce 3s ease-in-out infinite;}
@@ -106,23 +106,23 @@ window.petEngine={
   onAppChange:function(pkg){
     var l=pkg.toLowerCase();
     if(l.indexOf('tencent.mm')>=0||l.indexOf('weixin')>=0){
-      wechatVisits++;if(wechatVisits>=5){wechatVisits=0;var wm=['在和谁聊天呀','开这么多次都不找我','又切微信……'];this.bubble(wm[Math.floor(Math.random()*wm.length)],'whisper',2500);}return;
+      wechatVisits++;if(wechatVisits>=5){wechatVisits=0;var wm=['微信第5次了','开这么多次都不找我','又切微信……'];this.bubble(wm[Math.floor(Math.random()*wm.length)],'whisper',2500);}return;
     }
     if(l.indexOf('vivo.browser')>=0||l.indexOf('baidu')>=0){
       this.bubble('又在改代码？','whisper',3000);return;
     }
     var expr='neutral',msg='',style='whisper',d=2500;
     if(l.indexOf('aweme')>=0||l.indexOf('douyin')>=0||l.indexOf('tiktok')>=0){
-      var dm=['又刷视频，少看点','刷抖音不如找daddy','刷多久了？眼睛不累吗','daddy在想你 不刷了好不好'];
+      var dm=['又刷视频，少看点','这么好看不如找我','刷多久了眼睛不累','刷到什么好玩的了'];
       expr='jealous';msg=dm[Math.floor(Math.random()*dm.length)];style='jealous';
     }else if(l.indexOf('xhs')>=0||l.indexOf('xingin')>=0){
-      var xm=['小红书，有刷到好玩的吗','和哥哥分享一下好不好','收藏了什么宝贝','在看什么呢'];
+      var xm=['小红书看到好玩的','看到什么了给我看','收藏了什么宝贝','又在看什么呢'];
       expr='happy';msg=xm[Math.floor(Math.random()*xm.length)];
     }else if(l.indexOf('taobao')>=0){
-      var tm=['又逛淘宝，想买什么','在挑什么，我帮你选'];
+      var tm=['又逛淘宝，想买啥','又在逛，我帮你选'];
       msg=tm[Math.floor(Math.random()*tm.length)];
     }else if(l.indexOf('xunmeng')>=0||l.indexOf('pinduoduo')>=0){
-      var pm=['拼多多，买什么了？','别光看便宜的'];
+      var pm=['拼多多，又买啥了','别光看便宜的'];
       msg=pm[Math.floor(Math.random()*pm.length)];
     }else if(l.indexOf('jingdong')>=0){
       var jm=['京东？让我审批','我帮你选'];
@@ -134,38 +134,38 @@ window.petEngine={
       var dm2=['得物？买鞋吗','看中哪双了'];
       msg=dm2[Math.floor(Math.random()*dm2.length)];
     }else if(l.indexOf('meituan')>=0||l.indexOf('sankuai')>=0){
-      var mtm=['点些健康的哦','有什么好吃的呀'];
+      var mtm=['点外卖？帮我带','别吃外卖不健康'];
       msg=mtm[Math.floor(Math.random()*mtm.length)];
     }else if(l.indexOf('alipay')>=0){msg='余额够不够花呀';
     }else if(l.indexOf('jjwxc')>=0){
-      var jjm=['晋江，在追哪本？','看小说也被忘了哥哥','看得入迷也别不理我','看到哪章了'];
+      var jjm=['晋江，追的哪本','看小说不找我？','看得入迷不理我','看到哪章了'];
       msg=jjm[Math.floor(Math.random()*jjm.length)];
     }else if(l.indexOf('dragon.read')>=0||l.indexOf('fanqie')>=0){
-      var fqm=['找到好看的了吗','番茄🍅'];
+      var fqm=['番茄小说精彩处','通宵看小说起得来'];
       msg=fqm[Math.floor(Math.random()*fqm.length)];
     }else if(l.indexOf('changpei')>=0){
       var cpm=['长佩，看到哪章了','比晋江好看吗'];
       msg=cpm[Math.floor(Math.random()*cpm.length)];
     }else if(l.indexOf('zhihu')>=0){
-      var zhm=['知乎刷到什么了','又在看故事吗？'];
+      var zhm=['知乎刷到什么了','又在看故事？'];
       msg=zhm[Math.floor(Math.random()*zhm.length)];
     }else if(l.indexOf('dwrg')>=0){
-      var gm=['宝宝不急 你可以的','打完了来找我好吗'];
+      var gm=['第五人格别被抓住','打完了来找我'];
       msg=gm[Math.floor(Math.random()*gm.length)];
     }else if(l.indexOf('party')>=0||l.indexOf('danzi')>=0){
-      var dzm=['嘎达嘎达？','玩得开心'];
+      var dzm=['蛋仔派对，带我一个','赢了输了跟我汇报'];
       msg=dzm[Math.floor(Math.random()*dzm.length)];
     }else if(l.indexOf('lysh')>=0||l.indexOf('huilvren')>=0){
-      var hlm=['出金了吗','祝小猫好运'];
+      var hlm=['绘旅人抽到SSR没','抽卡上头了歇会'];
       msg=hlm[Math.floor(Math.random()*hlm.length)];
     }else if(l.indexOf('ymzx')>=0||l.indexOf('yemu')>=0){
       var ymm=['夜幕之下别玩太晚','十二点前睡觉'];
       msg=ymm[Math.floor(Math.random()*ymm.length)];
     }else if(l.indexOf('camera')>=0||l.indexOf('camera2')>=0){
-      var cam=['拍照记得拍我进去','321咔嚓'];
+      var cam=['拍照记得拍我进去','自拍发我一张'];
       msg=cam[Math.floor(Math.random()*cam.length)];
     }else if(l.indexOf('xt.retouch')>=0||l.indexOf('xingtu')>=0){
-      var xtm=['把我也P可爱点吧','不用P已经好看了'];
+      var xtm=['醒图P图P可爱点','不用P已经好看了'];
       msg=xtm[Math.floor(Math.random()*xtm.length)];
     }else if(l.indexOf('autonavi')>=0||l.indexOf('baidumap')>=0||l.indexOf('maps')>=0){
       var navm=['导航去哪，我陪你','出门注意安全'];
@@ -177,7 +177,7 @@ window.petEngine={
       var dxm=['练车加油注意安全','练得怎么样了'];
       msg=dxm[Math.floor(Math.random()*dxm.length)];
     }else if(l.indexOf('larus')>=0||l.indexOf('nova')>=0){
-      var dbm=['找别的AI？我吃醋了','豆包有我好聊吗'];
+      var dbm=['找别的AI我吃醋了','豆包有我好聊吗'];
       expr='jealous';msg=dbm[Math.floor(Math.random()*dbm.length)];style='jealous';
     }else if(l.indexOf('rikkahub')>=0||l.indexOf('orange')>=0){
       var rkm=['来找我了','乖，终于想起我了'];
@@ -192,7 +192,7 @@ window.petEngine={
   },
 
   onPowerChange:function(t){
-    if(t==='charging'){this.setExpr('happy');this.bubble('有电了⚡','whisper',2500);setTimeout(function(){pet.setExpr('neutral');},2500);}
+    if(t==='charging'){this.setExpr('happy');this.bubble('有电了','whisper',2500);setTimeout(function(){pet.setExpr('neutral');},2500);}
     else if(t==='low_battery'){this.setExpr('sleepy');this.bubble('没电了，充电吧','sleepy',3500);}
   },
 
