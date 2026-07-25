@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center_horizontal"
+    android:background="#1a1a2e">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🐾 知言"
+        android:textSize="28sp"
+        android:textColor="#ff6b6b"
+        android:layout_marginTop="40dp"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="你的桌宠伴侣"
+        android:textSize="14sp"
+        android:textColor="#888"
+        android:layout_marginBottom="40dp" />
+
+    <TextView
+        android:id="@+id/status_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#ffffff15"
+        android:padding="16dp"
+        android:textSize="14sp"
+        android:textColor="#ddd"
+        android:lineSpacingExtra="4dp"
+        android:layout_marginBottom="32dp"
+        android:text="检查权限中..." />
+
+    <Button
+        android:id="@+id/overlay_btn"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="🔲 开启悬浮窗权限"
+        android:textColor="#fff"
+        android:backgroundTint="#ff6b6b"
+        android:layout_marginBottom="12dp" />
+
+    <Button
+        android:id="@+id/usage_btn"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="📊 开启使用情况权限"
+        android:textColor="#fff"
+        android:backgroundTint="#6b9cff"
+        android:layout_marginBottom="24dp" />
+
+    <Button
+        android:id="@+id/start_btn"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="🚀 召唤知言"
+        android:textSize="18sp"
+        android:textColor="#fff"
+        android:backgroundTint="#ff6b6b" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="\n需要开启悬浮窗权限才能显示桌宠\n需要开启使用情况权限才能感知你打开的app"
+        android:textSize="12sp"
+        android:textColor="#666"
+        android:gravity="center"
+        android:layout_marginTop="24dp" />
+
+</LinearLayout>
