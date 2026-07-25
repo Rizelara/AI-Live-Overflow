@@ -138,10 +138,10 @@ class OverlayService : Service() {
                                     else if (tapCount >= 3) { onCombo(3); tapCount = 0 }
                                     else if (tapCount > 0) onTap()
                                 }, 350)
+                                true
                             }
                         }
-                    }
-                    true
+                    } else true
                 }
                 else -> false
             }
