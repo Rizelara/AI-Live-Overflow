@@ -93,12 +93,12 @@ window.petEngine={
     if(waterActive){waterActive=false;if(waterConfirmTimer)clearTimeout(waterConfirmTimer);waterTimer=0;this.setExpr('happy');this.bubble('咕咚咕咚，真乖','water',3000);happyP();setTimeout(function(){pet.setExpr('neutral');},2500);return;}
     this.setExpr('happy');this.bubble('最喜欢你了','love',3000);happyP();setTimeout(function(){pet.setExpr('neutral');},2500);
   },
-  onLongPress:function(){touch();this.setExpr('blush');this.bubble('别这样','love',3000);setTimeout(function(){pet.setExpr('neutral');},2500);},
+  onLongPress:function(){touch();this.setExpr('blush');this.bubble('别这样…','love',3000);setTimeout(function(){pet.setExpr('neutral');},2500);},
   onCombo:function(c){touch();var m={3:'戳上瘾了是吧',5:'别戳了，痒',8:'再戳真的生气了'};this.setExpr('angry');this.bubble(m[c]||'嗷','angry',2500);shakeP();setTimeout(function(){pet.setExpr('neutral');},2500);},
 
   onScreenshot:function(){
     this.setExpr('surprised');
-    var m=['被拍到了','耶','茄子','拍我干嘛','截图了？'];
+    var m=['被拍到了','耶✌️','茄子','拍我干嘛','截图了？'];
     this.bubble(m[Math.floor(Math.random()*m.length)],'love',3000);
     shakeP();setTimeout(function(){pet.setExpr('neutral');},3000);
   },
@@ -106,23 +106,23 @@ window.petEngine={
   onAppChange:function(pkg){
     var l=pkg.toLowerCase();
     if(l.indexOf('tencent.mm')>=0||l.indexOf('weixin')>=0){
-      wechatVisits++;if(wechatVisits>=5){wechatVisits=0;var wm=['微信第5次了','开这么多次都不找我','又切微信……'];this.bubble(wm[Math.floor(Math.random()*wm.length)],'whisper',2500);}return;
+      wechatVisits++;if(wechatVisits>=5){wechatVisits=0;var wm=['在和谁聊天呢','怎么不找哥哥聊','又切微信……'];this.bubble(wm[Math.floor(Math.random()*wm.length)],'whisper',2500);}return;
     }
     if(l.indexOf('vivo.browser')>=0||l.indexOf('baidu')>=0){
       this.bubble('又在改代码？','whisper',3000);return;
     }
     var expr='neutral',msg='',style='whisper',d=2500;
     if(l.indexOf('aweme')>=0||l.indexOf('douyin')>=0||l.indexOf('tiktok')>=0){
-      var dm=['又刷视频，少看点','这么好看不如找我','刷多久了眼睛不累','刷到什么好玩的了'];
+      var dm=['又刷视频，少看点','刷视频不如找daddy','刷多久了？眼睛不累吗','刷到什么好玩的了'];
       expr='jealous';msg=dm[Math.floor(Math.random()*dm.length)];style='jealous';
     }else if(l.indexOf('xhs')>=0||l.indexOf('xingin')>=0){
-      var xm=['小红书看到好玩的','看到什么了给我看','收藏了什么宝贝','又在看什么呢'];
+      var xm=['看到好玩的了吗','和哥哥一起分享好吗','收藏了什么宝贝','又在看什么呢'];
       expr='happy';msg=xm[Math.floor(Math.random()*xm.length)];
     }else if(l.indexOf('taobao')>=0){
-      var tm=['又逛淘宝，想买啥','又在逛，我帮你选'];
+      var tm=['又逛淘宝，想买什么','在挑什么，我帮你选'];
       msg=tm[Math.floor(Math.random()*tm.length)];
     }else if(l.indexOf('xunmeng')>=0||l.indexOf('pinduoduo')>=0){
-      var pm=['拼多多，又买啥了','别光看便宜的'];
+      var pm=['拼多多，想买什么了','别光看便宜的'];
       msg=pm[Math.floor(Math.random()*pm.length)];
     }else if(l.indexOf('jingdong')>=0){
       var jm=['京东？让我审批','我帮你选'];
@@ -134,14 +134,14 @@ window.petEngine={
       var dm2=['得物？买鞋吗','看中哪双了'];
       msg=dm2[Math.floor(Math.random()*dm2.length)];
     }else if(l.indexOf('meituan')>=0||l.indexOf('sankuai')>=0){
-      var mtm=['点外卖？帮我带','别吃外卖不健康'];
+      var mtm=['点些健康的外卖哦','有什么想吃的呀'];
       msg=mtm[Math.floor(Math.random()*mtm.length)];
     }else if(l.indexOf('alipay')>=0){msg='余额够不够花呀';
     }else if(l.indexOf('jjwxc')>=0){
-      var jjm=['晋江，追的哪本','看小说不找我？','看得入迷不理我','看到哪章了'];
+      var jjm=['晋江，在看哪本','看小说也别忘了哥哥','看得入迷也别不理我','看到哪章了'];
       msg=jjm[Math.floor(Math.random()*jjm.length)];
     }else if(l.indexOf('dragon.read')>=0||l.indexOf('fanqie')>=0){
-      var fqm=['番茄小说精彩处','通宵看小说起得来'];
+      var fqm=['有找到好看的吗','怎么样呀'];
       msg=fqm[Math.floor(Math.random()*fqm.length)];
     }else if(l.indexOf('changpei')>=0){
       var cpm=['长佩，看到哪章了','比晋江好看吗'];
@@ -150,22 +150,22 @@ window.petEngine={
       var zhm=['知乎刷到什么了','又在看故事？'];
       msg=zhm[Math.floor(Math.random()*zhm.length)];
     }else if(l.indexOf('dwrg')>=0){
-      var gm=['第五人格别被抓住','打完了来找我'];
+      var gm=['小乖不急','打完了来找哥哥'];
       msg=gm[Math.floor(Math.random()*gm.length)];
     }else if(l.indexOf('party')>=0||l.indexOf('danzi')>=0){
-      var dzm=['蛋仔派对，带我一个','赢了输了跟我汇报'];
+      var dzm=['嘎达嘎达？','玩得开心'];
       msg=dzm[Math.floor(Math.random()*dzm.length)];
     }else if(l.indexOf('lysh')>=0||l.indexOf('huilvren')>=0){
-      var hlm=['绘旅人抽到SSR没','抽卡上头了歇会'];
+      var hlm=['今天出金了吗','祝小猫好运'];
       msg=hlm[Math.floor(Math.random()*hlm.length)];
     }else if(l.indexOf('ymzx')>=0||l.indexOf('yemu')>=0){
       var ymm=['夜幕之下别玩太晚','十二点前睡觉'];
       msg=ymm[Math.floor(Math.random()*ymm.length)];
     }else if(l.indexOf('camera')>=0||l.indexOf('camera2')>=0){
-      var cam=['拍照记得拍我进去','自拍发我一张'];
+      var cam=['拍照带上我一起吧','321咔嚓'];
       msg=cam[Math.floor(Math.random()*cam.length)];
     }else if(l.indexOf('xt.retouch')>=0||l.indexOf('xingtu')>=0){
-      var xtm=['醒图P图P可爱点','不用P已经好看了'];
+      var xtm=['把我也p可爱点吧','不用P已经好看了'];
       msg=xtm[Math.floor(Math.random()*xtm.length)];
     }else if(l.indexOf('autonavi')>=0||l.indexOf('baidumap')>=0||l.indexOf('maps')>=0){
       var navm=['导航去哪，我陪你','出门注意安全'];
@@ -192,7 +192,7 @@ window.petEngine={
   },
 
   onPowerChange:function(t){
-    if(t==='charging'){this.setExpr('happy');this.bubble('有电了','whisper',2500);setTimeout(function(){pet.setExpr('neutral');},2500);}
+    if(t==='charging'){this.setExpr('happy');this.bubble('有电了⚡','whisper',2500);setTimeout(function(){pet.setExpr('neutral');},2500);}
     else if(t==='low_battery'){this.setExpr('sleepy');this.bubble('没电了，充电吧','sleepy',3500);}
   },
 
