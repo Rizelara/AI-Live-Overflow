@@ -34,6 +34,7 @@ class OverlayService : Service() {
     private var screenshotObserver: FileObserver? = null
     private var lastLowBatteryAlert = 0L
     private var randomBehaviorHandler: Handler? = null
+    private var wasCharging = false
 
     private val PET_INIT_X = 20
     private val PET_INIT_Y = 200
@@ -196,12 +197,12 @@ class OverlayService : Service() {
             override fun run() {
                 if (Math.random() < 0.3) {
                     val behaviors = arrayOf(
-                        "window.petEngine && window.petEngine.bubble('拍拍肚子……有点饿','whisper',3000)",
-                        "window.petEngine && window.petEngine.bubble('伸个懒腰～','whisper',2500)",
+                        "window.petEngine && window.petEngine.bubble('肚子饿了，想吃饭','whisper',3000)",
+                        "window.petEngine && window.petEngine.bubble('啊——好困','whisper',2500)",
                         "window.petEngine && window.petEngine.setExpr('blush'); window.petEngine && window.petEngine.bubble('突然有点想你','love',3000)",
-                        "window.petEngine && window.petEngine.bubble('转个圈～呼呼','whisper',2000)",
+                        "window.petEngine && window.petEngine.bubble('好安静啊……','whisper',2000)",
                         "window.petEngine && window.petEngine.bubble('你今天好看','love',2500)",
-                        "window.petEngine && window.petEngine.setExpr('happy'); window.petEngine && window.petEngine.bubble('心情不错！','love',2500)"
+                        "window.petEngine && window.petEngine.setExpr('happy'); window.petEngine && window.petEngine.bubble('今天心情不错','love',2500)"
                     )
                     overlayView?.evaluateJavascript(behaviors.random(), null)
                 }
@@ -212,6 +213,8 @@ class OverlayService : Service() {
     }
 
     // ========== GESTURE + FLING BACK ==========
+    private var flingStartX = 0
+    private var flingStartY = 0
 
     private var initialX = 0
     private var initialY = 0
@@ -229,6 +232,8 @@ class OverlayService : Service() {
                 MotionEvent.ACTION_DOWN -> {
                     initialX = params?.x ?: 0
                     initialY = params?.y ?: 0
+                    flingStartX = initialX
+                    flingStartY = initialY
                     initialTouchX = event.rawX
                     initialTouchY = event.rawY
                     touchStartTime = System.currentTimeMillis()
@@ -291,6 +296,7 @@ class OverlayService : Service() {
             display?.getSize(out)
             val sw = out.x
             val sh = out.y
+
             val px = params?.x ?: PET_INIT_X
             val py = params?.y ?: PET_INIT_Y
             val pw = dpToPx(PET_SIZE_DP)
@@ -444,7 +450,7 @@ class OverlayService : Service() {
         } catch (_: Exception) { false }
     }
 
-    // ========== BATTERY (10 minute cooldown) ==========
+    // ========== BATTERY (充电只触发一次 + 10分钟低电) ==========
 
     private fun registerBatteryReceiver() {
         batteryReceiver = object : BroadcastReceiver() {
@@ -452,12 +458,18 @@ class OverlayService : Service() {
                 val level = intent?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
                 val scale = intent?.getIntExtra(BatteryManager.EXTRA_SCALE, 100) ?: 100
                 val pct = level * 100 / scale
-                val charging = intent?.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) ?: 0
-                if (charging != 0) {
+                val plugged = intent?.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) ?: 0
+                val isCharging = plugged != 0
+
+                // 只有从非充电变成充电时才触发
+                if (isCharging && !wasCharging) {
                     overlayView?.evaluateJavascript(
                         "window.petEngine && window.petEngine.onPowerChange('charging')", null
                     )
-                } else if (pct <= 15) {
+                }
+                wasCharging = isCharging
+
+                if (!isCharging && pct <= 15) {
                     val now = System.currentTimeMillis()
                     if (now - lastLowBatteryAlert > LOW_BATTERY_COOLDOWN) {
                         lastLowBatteryAlert = now
