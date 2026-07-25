@@ -92,13 +92,7 @@ class OverlayService : Service() {
             dpToPx(PET_SIZE_DP),
             dpToPx(PET_HEIGHT_DP),
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
-            else
-                @Suppress("DEPRECATION") WindowManager.LayoutParams.TYPE_PHONE,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
-            PixelFormat.TRANSLUCENT
-        ).apply {
+                WindowManager.LayoutParams.TYPE_APPLICATION_OVER WindowAGParams_OUTapply {
             gravity = Gravity.TOP or Gravity.END
             x = PET_INIT_X
             y = PET_INIT_Y
@@ -177,8 +171,6 @@ class OverlayService : Service() {
                 whisperHandler?.postDelayed(this, 3600000)
             }
         }
-        val nm = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-        nm.createNotificationChannel(channel)
         whisperHandler?.postDelayed(runnable, 3600000)
     }
 
@@ -496,4 +488,4 @@ class OverlayService : Service() {
         overlayView = null
         super.onDestroy()
     }
-}
+            }
