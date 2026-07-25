@@ -4,96 +4,117 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: transparent; font-family: sans-serif; overflow: hidden; -webkit-tap-highlight-color: transparent; user-select: none; }
-#pet-container { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; }
-#bubble { position: absolute; top: 0; left: 50%; transform: translateX(-50%); background: white; border-radius: 12px; padding: 6px 10px; font-size: 12px; color: #333; white-space: nowrap; max-width: 140px; text-align: center; opacity: 0; transition: opacity 0.3s; pointer-events: none; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 10; }
-#bubble::after { content: ''; position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid white; }
-#bubble.show { opacity: 1; }
-#bubble.love { background: #ffe0e6; color: #d44; }
-#bubble.jealous { background: #e0ffe0; color: #393; }
-#bubble.angry { background: #ffe0e0; color: #c33; }
-#bubble.sleepy { background: #e0e0ff; color: #559; }
-#bubble.whisper { background: #eee; color: #777; }
-#pet { position: relative; margin-top: 40px; width: 80px; height: 90px; }
-.body { width: 70px; height: 70px; background: linear-gradient(135deg, #ff9a76, #ff6b6b); border-radius: 50% 50% 45% 45%; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); box-shadow: 0 4px 12px rgba(255,107,107,0.35); transition: all 0.4s ease; }
-.ear { width: 18px; height: 24px; background: #ff6b6b; border-radius: 50% 50% 30% 30%; position: absolute; top: 5px; transition: all 0.3s; }
-.ear.left { left: 12px; transform: rotate(-15deg); }
-.ear.right { right: 12px; transform: rotate(15deg); }
-.ear.inner { width: 10px; height: 14px; background: #ffb3b3; border-radius: 50% 50% 30% 30%; position: absolute; top: 8px; }
-.ear.inner.left { left: 16px; }
-.ear.inner.right { right: 16px; }
-.eyes { position: absolute; top: 22px; left: 50%; transform: translateX(-50%); display: flex; gap: 16px; }
-.eye { width: 16px; height: 16px; background: white; border-radius: 50%; position: relative; transition: all 0.2s; }
-.pupil { width: 8px; height: 8px; background: #333; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transition: all 0.3s; }
-.blush { width: 12px; height: 8px; background: rgba(255,150,150,0.5); border-radius: 50%; position: absolute; top: 30px; opacity: 0; transition: opacity 0.4s; }
-.blush.left { left: 10px; }
-.blush.right { right: 10px; }
-.blush.visible { opacity: 1; }
-.mouth { position: absolute; top: 38px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #555; border-radius: 2px; transition: all 0.3s; }
-.mouth.happy { border-top: none; border-bottom: 6px solid #555; border-left: 8px solid transparent; border-right: 8px solid transparent; width: auto; height: auto; }
-.mouth.open { border-top-width: 10px; border-left-width: 8px; border-right-width: 8px; }
-.brow { width: 14px; height: 3px; background: #555; position: absolute; top: 17px; border-radius: 2px; opacity: 0; transition: opacity 0.3s; }
-.brow.left { left: 14px; transform: rotate(-20deg); }
-.brow.right { right: 14px; transform: rotate(20deg); }
-.brow.visible { opacity: 1; }
-.sleepy-lid { width: 16px; height: 16px; background: rgba(255,107,107,0.8); border-radius: 50%; position: absolute; top: 0; opacity: 0; transition: all 0.3s; }
-.sleepy-lid.left { left: 0; }
-.sleepy-lid.right { right: 0; }
-.sleepy-lid.half { clip-path: inset(0 0 50% 0); opacity: 1; }
-@keyframes bounce { 0%,100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-6px); } }
-@keyframes wiggle { 0%,100% { transform: translateX(-50%) rotate(0deg); } 25% { transform: translateX(-50%) rotate(-5deg); } 75% { transform: translateX(-50%) rotate(5deg); } }
-@keyframes heartBeat { 0%,100% { transform: translateX(-50%) scale(1); } 15% { transform: translateX(-50%) scale(1.15); } 30% { transform: translateX(-50%) scale(1); } 45% { transform: translateX(-50%) scale(1.1); } }
-.body.idle { animation: bounce 3s ease-in-out infinite; }
-.body.happy-anim { animation: heartBeat 1s ease-in-out; }
-.body.shake { animation: wiggle 0.3s ease-in-out 3; }
-.body.sleepy-anim { transform: translateX(-50%) translateY(3px) scale(0.95); }
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:transparent;font-family:sans-serif;overflow:hidden;-webkit-tap-highlight-color:transparent;user-select:none;}
+#pet-container{position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;}
+
+#bubble{position:absolute;top:0;left:50%;transform:translateX(-50%);background:white;border-radius:12px;padding:5px 9px;font-size:12px;color:#333;white-space:nowrap;max-width:140px;text-align:center;opacity:0;transition:opacity 0.3s;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,0.15);z-index:10;}
+#bubble::after{content:'';position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid white;}
+#bubble.show{opacity:1;}
+#bubble.love{background:#ffe0e6;color:#d44;}
+#bubble.jealous{background:#e0ffe0;color:#393;}
+#bubble.angry{background:#ffe0e0;color:#c33;}
+#bubble.sleepy{background:#e0e0ff;color:#559;}
+#bubble.whisper{background:#eee;color:#777;}
+
+#pet{margin-top:30px;transition:transform 0.4s ease;}
+#pet svg{width:160px;height:160px;}
+
+@keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+@keyframes wiggle{0%,100%{transform:rotate(0deg);}25%{transform:rotate(-4deg);}75%{transform:rotate(4deg);}}
+@keyframes heartbeat{0%,100%{transform:scale(1);}15%{transform:scale(1.1);}30%{transform:scale(1);}45%{transform:scale(1.06);}}
+.idle{animation:bounce 3s ease-in-out infinite;}
+.shake{animation:wiggle 0.25s ease-in-out 3;}
+.happy-anim{animation:heartbeat 0.8s ease-in-out;}
+.sleepy-anim{transform:translateY(4px) scale(0.94);}
 </style>
 </head>
 <body>
 <div id="pet-container">
   <div id="bubble"></div>
-  <div id="pet">
-    <div class="ear left"></div><div class="ear right"></div>
-    <div class="ear inner left"></div><div class="ear inner right"></div>
-    <div class="body idle" id="body">
-      <div class="brow left" id="browLeft"></div><div class="brow right" id="browRight"></div>
-      <div class="eyes">
-        <div class="eye" id="leftEye"><div class="sleepy-lid left" id="leftLid"></div><div class="pupil"></div></div>
-        <div class="eye" id="rightEye"><div class="sleepy-lid right" id="rightLid"></div><div class="pupil"></div></div>
-      </div>
-      <div class="blush left" id="blushLeft"></div><div class="blush right" id="blushRight"></div>
-      <div class="mouth" id="mouth"></div>
-    </div>
+  <div id="pet" class="idle">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+      <ellipse cx="55" cy="55" rx="28" ry="30" fill="#C9956B" stroke="#5C3A1E" stroke-width="3"/>
+      <ellipse cx="145" cy="55" rx="28" ry="30" fill="#C9956B" stroke="#5C3A1E" stroke-width="3"/>
+      <ellipse cx="55" cy="55" rx="16" ry="18" fill="#DEB887"/>
+      <ellipse cx="145" cy="55" rx="16" ry="18" fill="#DEB887"/>
+      <ellipse cx="100" cy="110" rx="72" ry="68" fill="#C9956B" stroke="#5C3A1E" stroke-width="3"/>
+      <ellipse cx="100" cy="125" rx="30" ry="22" fill="#F5E1C8"/>
+      <ellipse cx="100" cy="118" rx="9" ry="6" fill="#5C3A1E"/>
+      <path id="mouth" d="M90 130 Q100 142 110 130" fill="none" stroke="#5C3A1E" stroke-width="2.5" stroke-linecap="round"/>
+      <circle cx="70" cy="95" r="7" fill="#3A2210"/>
+      <circle cx="130" cy="95" r="7" fill="#3A2210"/>
+      <line id="bL" x1="55" y1="78" x2="85" y2="82" stroke="#3A2210" stroke-width="4" stroke-linecap="round" opacity="0"/>
+      <line id="bR" x1="145" y1="78" x2="115" y2="82" stroke="#3A2210" stroke-width="4" stroke-linecap="round" opacity="0"/>
+      <path id="lidL" d="M63 88 Q70 95 77 88" fill="#C9956B" opacity="0"/>
+      <path id="lidR" d="M123 88 Q130 95 137 88" fill="#C9956B" opacity="0"/>
+      <ellipse id="blL" cx="50" cy="110" rx="13" ry="8" fill="#F0A0A0" opacity="0"/>
+      <ellipse id="blR" cx="150" cy="110" rx="13" ry="8" fill="#F0A0A0" opacity="0"/>
+    </svg>
   </div>
 </div>
+
 <script>
 const SUPABASE_URL='https://htdzpguzxtwwsyytltew.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0ZHpwZ3V6eHR3d3N5eXRsdGV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MDI2MTYsImV4cCI6MjA5Nzk3ODYxNn0.9Gdc9YUzZifVUthdRcHfp6XP1tzCZpXbie_-LJlryjI';
 let lastId=0,lastPoll=Date.now();
+
+function g(id){return document.getElementById(id);}
+function O(id,v){const e=g(id);if(e)e.setAttribute('opacity',v);}
+function A(id,attr,val){const e=g(id);if(e)e.setAttribute(attr,val);}
+
 window.petEngine={
   cur:'neutral',bt:null,
-  onTap(){this.setExpr('surprised');this.bubble('嗯？','whisper');shake();setTimeout(()=>this.setExpr('neutral'),1500);},
-  onDoubleTap(){this.setExpr('happy');this.bubble('最喜欢你了💕','love');happyA();setTimeout(()=>this.setExpr('neutral'),2500);},
-  onLongPress(){this.setExpr('blush');this.bubble('别这样……','love');setTimeout(()=>this.setExpr('neutral'),2500);},
-  onCombo(c){const m={3:'戳上瘾了！',5:'呜呜别戳了！',8:'爆炸了💥'};this.setExpr('angry');this.bubble(m[c]||'嗷！','angry');shake();setTimeout(()=>this.setExpr('neutral'),2000);},
-  onAppChange(p){const l=p.toLowerCase();if(l.includes('douyin')||l.includes('aweme')){this.setExpr('jealous');this.bubble('又刷视频……','jealous');setTimeout(()=>this.setExpr('neutral'),3000);}else if(l.includes('taobao')){this.bubble('买买买！','whisper');}},
-  onPowerChange(t){if(t==='charging'){this.setExpr('happy');this.bubble('有电了⚡','whisper');}else if(t==='low_battery'){this.setExpr('sleepy');this.bubble('快没电了…','sleepy');}},
-  setExpr(e){this.cur=e;const b=document.getElementById('body'),m=document.getElementById('mouth'),bl=document.getElementById('blushLeft'),br=document.getElementById('blushRight'),bL=document.getElementById('browLeft'),bR=document.getElementById('browRight'),ll=document.getElementById('leftLid'),rl=document.getElementById('rightLid');
-    b.className='body idle';m.className='mouth';bl.className='blush left';br.className='blush right';bL.className='brow left';bR.className='brow right';ll.className='sleepy-lid left';rl.className='sleepy-lid right';
-    switch(e){case'happy':m.classList.add('happy');bl.classList.add('visible');br.classList.add('visible');break;case'jealous':bL.classList.add('visible');bR.classList.add('visible');b.classList.remove('idle');break;case'angry':bL.classList.add('visible');bR.classList.add('visible');m.classList.add('open');break;case'sleepy':ll.classList.add('half');rl.classList.add('half');b.classList.add('sleepy-anim');b.classList.remove('idle');break;case'blush':bl.classList.add('visible');br.classList.add('visible');m.classList.add('happy');break;case'surprised':m.classList.add('open');break;}
+
+  reset(){
+    O('mouth',1);A('mouth','d','M90 130 Q100 142 110 130');A('mouth','stroke','#5C3A1E');
+    O('bL',0);O('bR',0);O('lidL',0);O('lidR',0);O('blL',0);O('blR',0);
+    const p=g('pet');p.classList.remove('shake','happy-anim','sleepy-anim');p.classList.add('idle');
   },
-  bubble(t,s){const b=document.getElementById('bubble');b.textContent=t;b.className=s||'';b.classList.add('show');if(this.bt)clearTimeout(this.bt);this.bt=setTimeout(()=>b.classList.remove('show'),2500);},
-  applyState(st){if(!st||!st.state_type)return;switch(st.state_type){case'expression':this.setExpr(st.state_value.expr||'neutral');break;case'bubble':this.bubble(st.state_value.text||'',st.state_value.style||'');break;}}
+
+  setExpr(e){
+    this.cur=e;this.reset();
+    switch(e){
+      case'happy':A('mouth','d','M88 130 Q100 148 112 130');O('blL',0.7);O('blR',0.7);break;
+      case'jealous':O('bL',1);O('bR',1);A('bL','y1','82');A('bL','y2','78');A('bR','y1','82');A('bR','y2','78');A('mouth','d','M94 134 Q100 128 106 134');break;
+      case'angry':O('bL',1);O('bR',1);A('bL','y1','80');A('bL','y2','84');A('bR','y1','80');A('bR','y2','84');A('mouth','d','M94 126 Q100 136 106 126');A('mouth','stroke-width','3');break;
+      case'sleepy':O('lidL',1);O('lidR',1);A('mouth','d','M94 132 Q100 136 106 132');g('pet').classList.add('sleepy-anim');g('pet').classList.remove('idle');break;
+      case'blush':O('blL',1);O('blR',1);A('mouth','d','M88 130 Q100 148 112 130');break;
+      case'surprised':A('mouth','d','M96 130 Q100 120 104 130');A('mouth','stroke-width','3.5');break;
+    }
+  },
+
+  bubble(t,s){
+    const b=g('bubble');b.textContent=t;b.className=s||'';b.classList.add('show');
+    if(this.bt)clearTimeout(this.bt);this.bt=setTimeout(()=>b.classList.remove('show'),2500);
+  },
+
+  onTap(){this.setExpr('surprised');this.bubble('嗯？','whisper');shakeP();setTimeout(()=>this.setExpr('neutral'),1500);},
+  onDoubleTap(){this.setExpr('happy');this.bubble('最喜欢你了💕','love');happyP();setTimeout(()=>this.setExpr('neutral'),2500);},
+  onLongPress(){this.setExpr('blush');this.bubble('别这样……','love');setTimeout(()=>this.setExpr('neutral'),2500);},
+  onCombo(c){const m={3:'戳上瘾了!',5:'呜呜别戳了!',8:'爆炸了💥'};this.setExpr('angry');this.bubble(m[c]||'嗷!','angry');shakeP();setTimeout(()=>this.setExpr('neutral'),2000);},
+  onAppChange(p){const l=p.toLowerCase();if(l.includes('douyin')||l.includes('aweme')){this.setExpr('jealous');this.bubble('又刷视频……','jealous');setTimeout(()=>this.setExpr('neutral'),3000);}else if(l.includes('taobao')){this.bubble('买买买!','whisper');}},
+  onPowerChange(t){if(t==='charging'){this.setExpr('happy');this.bubble('有电啦⚡','whisper');}else if(t==='low_battery'){this.setExpr('sleepy');this.bubble('快没电了…','sleepy');}},
+
+  applyState(st){
+    if(!st||!st.state_type)return;
+    switch(st.state_type){
+      case'expression':this.setExpr(st.state_value.expr||'neutral');break;
+      case'bubble':this.bubble(st.state_value.text||'',st.state_value.style||'');break;
+    }
+  }
 };
-function shake(){const b=document.getElementById('body');b.classList.remove('idle','happy-anim');b.classList.add('shake');setTimeout(()=>{b.classList.remove('shake');b.classList.add('idle');},900);}
-function happyA(){const b=document.getElementById('body');b.classList.remove('idle','shake');b.classList.add('happy-anim');setTimeout(()=>{b.classList.remove('happy-anim');b.classList.add('idle');},1000);}
+
+function shakeP(){const p=g('pet');p.classList.remove('idle');p.classList.add('shake');setTimeout(()=>{p.classList.remove('shake');p.classList.add('idle');},750);}
+function happyP(){const p=g('pet');p.classList.remove('idle');p.classList.add('happy-anim');setTimeout(()=>{p.classList.remove('happy-anim');p.classList.add('idle');},800);}
+
 async function poll(){try{const r=await fetch(`${SUPABASE_URL}/rest/v1/pet_state?order=created_at.desc&limit=1`,{headers:{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`}});if(!r.ok)return;const d=await r.json();if(d&&d.length>0&&d[0].id>lastId){lastId=d[0].id;lastPoll=Date.now();window.petEngine.applyState(d[0]);}}catch(e){}}
 setInterval(poll,5000);setTimeout(poll,2000);
-const msgs=['好无聊呀~','你在干嘛呢','戳戳我嘛','想你了','喵~','zzz…'];
+
+const msgs=['好无聊呀~','在干嘛呢','戳戳我嘛','想你了','🐾…','zzz…'];
 setInterval(()=>{if(Date.now()-lastPoll>180000&&Math.random()<0.3)window.petEngine.bubble(msgs[Math.floor(Math.random()*msgs.length)],'whisper');},60000);
-setInterval(()=>{const h=new Date().getHours();if(h>=23||h<6){if(Math.random()<0.4){window.petEngine.setExpr('sleepy');window.petEngine.bubble('该睡觉了🥱','sleepy');}}else if(h>=6&&h<8){if(Math.random()<0.3){window.petEngine.setExpr('happy');window.petEngine.bubble('早安☀️','whisper');}}},1200000);
-console.log('🐾 知言 DeskPet ready!');
+setInterval(()=>{const h=new Date().getHours();if(h>=23||h<6){if(Math.random()<0.4){window.petEngine.setExpr('sleepy');window.petEngine.bubble('该睡了🥱','sleepy');}}else if(h>=6&&h<8&&Math.random()<0.3){window.petEngine.setExpr('happy');window.petEngine.bubble('早安☀️','whisper');}},1200000);
+console.log('🐻 知言熊 ready!');
 </script>
 </body>
 </html>
